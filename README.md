@@ -28,6 +28,8 @@ Cosmic was created to fill a gap I felt personally in this self-hostable pastebi
 
 There is definitely some inefficiencies in the codebase, and awkward inconsistencies (i.e using remote functions in some places, and using actions in others), but I think it's composed together sufficiently enough.
 
+[DeepWiki Overview](https://deepwiki.com/Trifall/cosmic)
+
 ## Tech Stack
 
 [![SvelteKit](https://img.shields.io/badge/SvelteKit-FF3E00?style=for-the-badge&logo=svelte&logoColor=white)](https://kit.svelte.dev/)
