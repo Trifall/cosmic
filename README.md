@@ -99,7 +99,6 @@ Role-based access control with three distinct permission levels:
 - Configurable forced expiration windows for paste retention
 - Role-based access control throughout
 
-
 ## Deployment
 
 ### Docker Deployment (Recommended)
@@ -236,11 +235,12 @@ For manual deployments or development environments:
 
 2. **Set up your PostgreSQL database**
    - You can use the docker-compose.dev.yml, and spin up only the database if you want to run the web-server directly on the host machine by running something like:
-	 ```bash
-	 docker compose -p cosmic-dev -f docker-compose.dev.yml up -d db
-	 ```
-   - Or you can use another PostgreSQL instance, just make sure to update the `DB_*` related variables if required.
 
+```bash
+docker compose -p cosmic-dev -f docker-compose.dev.yml up -d db
+```
+
+- Or you can use another PostgreSQL instance, just make sure to update the `DB_*` related variables if required.
 
 4. **Run database setup (set env variables before):**
 
