@@ -83,6 +83,8 @@ services:
     # you can use a .env file to set environment variables if you want
     env_file:
       - .env
+    networks:
+      - cosmic-network
 
   # Database Service (PostgreSQL)
   db:
@@ -113,6 +115,12 @@ services:
     restart: unless-stopped
     env_file:
       - .env
+    networks:
+      - cosmic-network
 
 volumes:
   cosmic-postgres-data:
+
+networks:
+  cosmic-network:
+    name: cosmic-network
