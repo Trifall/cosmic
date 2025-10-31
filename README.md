@@ -1,17 +1,104 @@
 # Cosmic
 
-A modern pastebin-like inspired by [Spacebin](https://github.com/lukewhrit/spacebin) built with SvelteKit and PostgreSQL.
+A modern, self-hostable pastebin built with SvelteKit and PostgreSQL.
+
+![cosmic-example](https://github.com/user-attachments/assets/b97a8734-66ab-439b-9214-1b880ee4a818)
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Tech Stack](#tech-stack)
+- [Features](#features)
+  - [Authentication & Permissions](#authentication--permissions)
+  - [Paste Management](#paste-management)
+  - [Backups](#backups)
+  - [Security & Performance](#security--performance)
+- [Deployment](#deployment)
+  - [Docker Deployment (Recommended)](#docker-deployment-recommended)
+  - [Manual Deployment](#manual-deployment)
+- [Environment Variable Priority](#environment-variable-priority)
+- [First-Time Setup & Recovery](#first-time-setup--recovery)
+- [Troubleshooting](#troubleshooting)
+- [Shoutouts](#shoutouts)
+- [License](#license)
+
+## Overview
+
+Cosmic was created to fill a gap I felt personally in this self-hostable pastebin ecosystem. Most existing solutions I could find either lacked a standard authentication system or didn't quite match the aesthetic I was looking for. Inspired by [Spacebin](https://github.com/lukewhrit/spacebin)'s ultra-minimalist design, Cosmic combines that modern simplicity with a authentication system and paste management features.
+
+There is definitely some inefficiencies in the codebase, and awkward inconsistencies (i.e using remote functions in some places, and using actions in others), but I think it's composed together sufficiently enough.
 
 ## Tech Stack
 
-- SvelteKit (Svelte 5)
-- PostgreSQL
-- Drizzle ORM
-- Better Auth
-- Zod
-- Tailwind
-- Bun
-- Docker
+[![SvelteKit](https://img.shields.io/badge/SvelteKit-FF3E00?style=for-the-badge&logo=svelte&logoColor=white)](https://kit.svelte.dev/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Drizzle](https://img.shields.io/badge/Drizzle-C5F74F?style=for-the-badge&logo=drizzle&logoColor=black)](https://orm.drizzle.team/)
+[![Better Auth](https://img.shields.io/badge/Better_Auth-000000?style=for-the-badge&logo=betterauth&logoColor=white)](https://www.better-auth.com/)
+[![Zod](https://img.shields.io/badge/Zod-3E67B1?style=for-the-badge&logo=zod&logoColor=white)](https://zod.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Bun](https://img.shields.io/badge/Bun-000000?style=for-the-badge&logo=bun&logoColor=white)](https://bun.sh/)
+[![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
+
+## Features
+
+### Authentication & Permissions
+
+Role-based access control with three distinct permission levels:
+
+- **Admins** - Full system access including:
+  - Admin dashboard with analytics
+  - User management (view, create, edit)
+  - Global paste management
+  - Server configuration settings
+
+- **Users** - Standard authenticated features:
+  - Create and manage personal pastes
+  - Edit existing pastes with version history
+  - Access to all paste customization options
+
+- **Guests** - Limited access (configurable):
+  - View public pastes
+  - Optional paste creation (admin-controlled)
+
+### Paste Management
+
+- **Syntax Highlighting**
+  - Using highlight.js with automatic language detection
+  - Client-side language override for custom viewing preferences
+
+- **Customization Options**
+  - Expiration time controls
+  - Password protection
+  - Multiple visibility levels (public, authenticated-only, invite-only, private)
+  - Burn after reading
+  - Custom URLs
+
+- **Viewing & Sharing**
+  - Raw text view
+  - Markdown rendered view
+  - One-click clipboard copy
+  - Download support
+  - Fork functionality for authorized users
+
+- **Version Control**
+  - Paste versioning system (content only)
+  - Configurable version visibility for viewers
+
+### Backups
+
+- Automated backups on cron schedules
+- Multiple storage backends:
+  - AWS S3
+  - Cloudflare R2
+  - Local filesystem
+- Optional compression
+
+### Security & Performance
+
+- Built-in rate limiting with separate limits for authenticated/unauthenticated users
+- Configurable forced expiration windows for paste retention
+- Role-based access control throughout
+
 
 ## Deployment
 
@@ -52,11 +139,11 @@ On startup, the application automatically applies any necessary database migrati
 
 4. Open your browser and navigate to the URL you set in the `PUBLIC_WEB_UI_URL` environment variable.
 
-#### Configuration
+### Configuration
 
 **Docker will fail to start** if required variables are undefined.
 
-### Required Variables
+#### Required Variables
 
 - **`PUBLIC_WEB_UI_URL`** - The public URL where your application will be accessed. This is used for redirects, and authentication callbacks. Examples: `https://yourdomain.com`, `http://192.168.1.100:3000`, `http://localhost:3000`
 
@@ -66,7 +153,7 @@ On startup, the application automatically applies any necessary database migrati
 
 - **`PUBLIC_SITE_NAME`** - The display name shown in throughout the application. Defaults to `"Cosmic"`.
 
-### Optional Variables (commented out by default)
+#### Optional Variables (commented out by default)
 
 Uncomment the variables you want to use and modify as needed.
 
@@ -148,14 +235,20 @@ For manual deployments or development environments:
    ```
 
 2. **Set up your PostgreSQL database**
+   - You can use the docker-compose.dev.yml, and spin up only the database if you want to run the web-server directly on the host machine by running something like:
+	 ```bash
+	 docker compose -p cosmic-dev -f docker-compose.dev.yml up -d db
+	 ```
+   - Or you can use another PostgreSQL instance, just make sure to update the `DB_*` related variables if required.
 
-3. **Run database setup (set env variables before):**
+
+4. **Run database setup (set env variables before):**
 
    ```bash
    bun run db:deploy
    ```
 
-4. **Start the application:**
+5. **Start the application:**
 
    ```bash
    bun run dev  # for development
