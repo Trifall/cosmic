@@ -128,7 +128,17 @@
 							currentLine += `<span class="${span.className}">`;
 						}
 					} else {
-						currentLine += text[i];
+						// escape HTML entities to prevent breaking the structure
+						const char = text[i];
+						if (char === '<') {
+							currentLine += '&lt;';
+						} else if (char === '>') {
+							currentLine += '&gt;';
+						} else if (char === '&') {
+							currentLine += '&amp;';
+						} else {
+							currentLine += char;
+						}
 					}
 					i++;
 				}
