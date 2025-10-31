@@ -62,9 +62,6 @@ export const load: PageServerLoad = async ({
 		// check if unauthenticated paste creation is enabled
 		const unauthPasteCreationEnabled = await getSetting('enableUnauthenticatedPasteCreation');
 
-		logger.debug(`isUnauthenticatedUser(user): ${isUnauthenticatedUser(user)}`);
-		logger.debug(`unauthPasteCreationEnabled: ${unauthPasteCreationEnabled}`);
-
 		if (isUnauthenticatedUser(user) && !unauthPasteCreationEnabled) {
 			return {
 				user: null,
@@ -357,8 +354,6 @@ export const actions: Actions = {
 			if (result.data.password && result.data.password.trim()) {
 				passwordHash = await hashPassword(result.data.password);
 			}
-
-			logger.debug(`content: ${result.data.content}`);
 
 			await createPaste({
 				id: pasteId,
