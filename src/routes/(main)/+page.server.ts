@@ -358,6 +358,8 @@ export const actions: Actions = {
 				passwordHash = await hashPassword(result.data.password);
 			}
 
+			logger.debug(`content: ${result.data.content}`);
+
 			await createPaste({
 				id: pasteId,
 				content: result.data.content,

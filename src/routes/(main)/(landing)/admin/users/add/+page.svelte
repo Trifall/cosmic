@@ -18,6 +18,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { ROUTES } from '$src/lib/routes';
+	import { getPublicSiteName } from '$src/lib/utils/format';
 	import { Select, SelectContent, SelectItem, SelectTrigger } from '$components/ui/select';
 	import type { PageProps } from './$types';
 
@@ -55,6 +56,10 @@
 	// form errors
 	let errors = $state<Record<string, string[]>>({ _form: [] });
 </script>
+
+<svelte:head>
+	<title>Add New User - Admin - {getPublicSiteName()}</title>
+</svelte:head>
 
 <svelte:window
 	on:beforeunload={(ev) => {

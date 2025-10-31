@@ -9,6 +9,7 @@
 		EXPIRY_OPTIONS,
 		SETTING_DEFAULT_VALUES,
 	} from '$src/lib/shared/settings';
+	import { getPublicSiteName } from '$src/lib/utils/format';
 	import { getAllSettingsQuery } from '$src/routes/(main)/(landing)/admin/settings/settings.remote';
 	import { Button } from '$components/ui/button';
 	import { Card, CardContent, CardHeader, CardTitle } from '$components/ui/card';
@@ -74,6 +75,10 @@
 		}
 	});
 </script>
+
+<svelte:head>
+	<title>Admin - Settings - {getPublicSiteName()}</title>
+</svelte:head>
 
 <TooltipProvider delayDuration={0}>
 	<div class="container mx-auto px-4">

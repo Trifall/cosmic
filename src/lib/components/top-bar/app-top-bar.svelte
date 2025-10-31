@@ -92,6 +92,7 @@
 >
 	<!-- Logo/Brand -->
 	<a
+		data-sveltekit-preload-data="off"
 		href={resolve(ROUTES.HOME as Pathname)}
 		class="flex items-center gap-2 text-foreground transition-colors hover:text-primary"
 		title={getPublicSiteName()}
@@ -119,6 +120,7 @@
 		{#if user}
 			{#each dashboardNavItems as item (item.url)}
 				<a
+					data-sveltekit-preload-data="off"
 					href={resolve(item.url as Pathname)}
 					class="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-primary {isCurrentPath(
 						item.url
@@ -137,6 +139,7 @@
 			<!-- Settings Section -->
 			{#each settingsNavItems as item (item.url)}
 				<a
+					data-sveltekit-preload-data="off"
 					href={resolve(item.url as Pathname)}
 					class="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-primary {isCurrentPath(
 						item.url
@@ -157,6 +160,7 @@
 
 			{#each adminNavItems as item (item.url)}
 				<a
+					data-sveltekit-preload-data="off"
 					href={resolve(item.url as Pathname)}
 					class="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-primary {isCurrentPath(
 						item.url
@@ -213,6 +217,7 @@
 			<nav class="flex flex-col gap-1 p-2">
 				<!-- Home Button -->
 				<a
+					data-sveltekit-preload-data="off"
 					href={resolve(ROUTES.HOME as Pathname)}
 					onclick={closeMobileMenu}
 					class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-foreground transition-colors hover:bg-accent hover:text-primary {isCurrentPath(
@@ -238,6 +243,7 @@
 						</div>
 						{#each dashboardNavItems as item (item.url)}
 							<a
+								data-sveltekit-preload-data="off"
 								href={resolve(item.url as Pathname)}
 								onclick={closeMobileMenu}
 								class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-foreground transition-colors hover:bg-accent hover:text-primary {isCurrentPath(
@@ -262,6 +268,7 @@
 						</div>
 						{#each settingsNavItems as item (item.url)}
 							<a
+								data-sveltekit-preload-data="off"
 								href={resolve(item.url as Pathname)}
 								onclick={closeMobileMenu}
 								class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-foreground transition-colors hover:bg-accent hover:text-primary {isCurrentPath(
@@ -286,6 +293,7 @@
 						<div class="mb-1 px-3 text-xs font-semibold uppercase text-muted-foreground">Admin</div>
 						{#each adminNavItems as item (item.url)}
 							<a
+								data-sveltekit-preload-data="off"
 								href={resolve(item.url as Pathname)}
 								onclick={closeMobileMenu}
 								class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-foreground transition-colors hover:bg-accent hover:text-primary {isCurrentPath(
