@@ -69,11 +69,12 @@ services:
       #R2_KEY_PREFIX: ${R2_KEY_PREFIX:-}
 
       # --- Database ---
-      # if you REALLY need to override the database settings, you can do so here. the defaults should be fine for most cases
-      #DB_HOST=
-      #DB_PORT=
-      #DB_USER=
-      #DB_NAME=
+      # if you REALLY need to override the database settings, you can do so here. the defaults are listed, and should be fine for most cases
+
+      #DB_HOST: db
+      #DB_PORT: 5432
+      #DB_USER: postgres
+      #DB_NAME: cosmic
     depends_on:
       db:
         condition: service_healthy

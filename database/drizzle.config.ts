@@ -4,7 +4,7 @@ import { defineConfig } from 'drizzle-kit';
 const dbUser = process.env.DB_USER || 'postgres';
 const dbName = process.env.DB_NAME || 'cosmic';
 const dbPort = process.env.DB_PORT || '5432';
-const dbHost = process.env.DB_HOST || 'localhost';
+const dbHost = process.env.DB_HOST || 'db';
 const dbSslMode = process.env.DB_SSLMODE || 'disable';
 
 // only password is required
