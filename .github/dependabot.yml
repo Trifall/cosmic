@@ -1,0 +1,59 @@
+version: 2
+updates:
+  # Monitor npm dependencies (package.json)
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+      time: '09:00'
+    open-pull-requests-limit: 5
+    groups:
+      # Group ALL non-major updates into one PR
+      all-dependencies:
+        update-types:
+          - 'minor'
+          - 'patch'
+        patterns:
+          - '*'
+    # Major updates (breaking changes) will still be separate PRs
+    # Ignore specific dependencies that shouldn't be auto-updated
+    ignore:
+      - dependency-name: 'bits-ui'
+      - dependency-name: 'svelte-adapter-bun'
+      - dependency-name: 'tailwind-variants'
+      - dependency-name: 'tailwindcss'
+      - dependency-name: 'vaul-svelte'
+    labels:
+      - 'dependencies'
+    reviewers:
+      - 'Trifall'
+    commit-message:
+      prefix: 'chore'
+      include: 'scope'
+
+  # Monitor GitHub Actions
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+      time: '09:00'
+    labels:
+      - 'dependencies'
+      - 'github-actions'
+    commit-message:
+      prefix: 'ci'
+
+  # Monitor Docker base images
+  - package-ecosystem: 'docker'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+      time: '09:00'
+    labels:
+      - 'dependencies'
+      - 'docker'
+    commit-message:
+      prefix: 'chore'

@@ -1,0 +1,15 @@
+{
+	"extends": "../tsconfig.json",
+	"compilerOptions": {
+		"baseUrl": "..",
+		"paths": {
+			"@/*": ["./*"],
+			"$src/*": ["./src/*"],
+			"$types/*": ["./src/types/*"],
+			"$components/*": ["./src/lib/components/*"],
+			"$database/*": ["./database/*"]
+		}
+	},
+	"include": ["../src/**/*", "./**/*"],
+	"exclude": ["../src/**/*.svelte", "../src/**/*.test.ts", "../src/**/*.spec.ts"]
+}

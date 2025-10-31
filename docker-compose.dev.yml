@@ -1,0 +1,115 @@
+services:
+  cosmic:
+    build: .
+    container_name: cosmic-web
+    ports:
+      - '3000:3000'
+    #volumes:
+    # Un-comment this to enable filesystem backups. Make sure the second path is set to the same path as the BACKUPS_DIRECTORY variable
+    # i.e - ./YOUR_BACKUP_DIR:/app/backups
+    # - ./backups:${BACKUPS_DIRECTORY:-/app/backups}
+    environment:
+      # ------------------- REQUIRED -------------------
+
+      # The URL of the public web UI where the application is hosted (e.g., https://yourdomain.com, http://localhost:3000, etc.)
+      PUBLIC_WEB_UI_URL: ${PUBLIC_WEB_UI_URL:?PUBLIC_WEB_UI_URL is not set. Please set it to your domain/URL/IP or localhost if only running on the same network.}
+
+      # Better Auth Secret - This is required for authentication to work
+      # you can generate a good secret using the terminal command `openssl rand -base64 32`
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET is not set. Please generate a secret and add it to your docker-compose.yml}
+
+      # --- Database ---
+      # for security reasons, set DB_PASSWORD. This will be used for the database connection.
+      # you can also use `openssl rand -base64 32` to generate a random password
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is not set. Please generate a password and add it to your docker-compose.yml }
+
+      # --- Site ---
+      # The display name of the site (e.g., Cosmic, "John's Pastes"). Defaults to "Cosmic"
+      PUBLIC_SITE_NAME: ${PUBLIC_SITE_NAME:-Cosmic}
+
+      # ------------------- OPTIONAL -------------------
+      # All variables in this section are optional, but some are required for specific features to work
+      # some of them also depend on each other (i.e AWS variables).
+
+      # --- Registration and Recovery ---
+      # Emergency override to force first-time setup (for self-hosted recovery)
+      # WARNING: Remove this after recovering access to prevent unintended registrations
+      #FORCE_FIRST_TIME_SETUP: ${FORCE_FIRST_TIME_SETUP:-false}
+
+      # --- Backups ---
+      # Filesystem Backups
+      # This is the directory where backups will be stored in the container, if you want an external volume for backups, un-comment the volume section above
+
+      #BACKUPS_DIRECTORY: /app/backups
+
+      # AWS S3 Backup Upload
+      # If these are configured, backups will be automatically uploaded to S3, you must define all or none of them (except for AWS_S3_KEY_PREFIX)
+
+      #AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      #AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+      #AWS_REGION: ${AWS_REGION:-}
+      #AWS_S3_BUCKET: ${AWS_S3_BUCKET:-}
+
+      # Optional: S3 key prefix for organizing backups in folders (e.g., "cosmic-backups/")
+      #AWS_S3_KEY_PREFIX: ${AWS_S3_KEY_PREFIX:-}
+
+      # Cloudflare R2 Backup Upload
+      # Docs: https://developers.cloudflare.com/r2/ | https://developers.cloudflare.com/r2/get-started/
+      # If these are configured, backups will be automatically uploaded to R2, you must define all or none of them (except for R2_KEY_PREFIX)
+
+      #R2_ACCESS_KEY_ID: ${R2_ACCESS_KEY_ID:-}
+      #R2_SECRET_ACCESS_KEY: ${R2_SECRET_ACCESS_KEY:-}
+      #R2_ACCOUNT_ID: ${R2_ACCOUNT_ID:-}
+      #R2_BUCKET_NAME: ${R2_BUCKET_NAME:-}
+      # Optional: R2 key prefix for organizing backups in folders (e.g., "cosmic-backups/")
+      #R2_KEY_PREFIX: ${R2_KEY_PREFIX:-}
+
+      # --- Database ---
+      # if you REALLY need to override the database settings, you can do so here. the defaults should be fine for most cases
+      #DB_HOST=
+      #DB_PORT=
+      #DB_USER=
+      #DB_NAME=
+    depends_on:
+      db:
+        condition: service_healthy
+    command: sh -c "bun run db:deploy && bun run start"
+    restart: unless-stopped
+    env_file:
+      - .env
+    networks:
+      - cosmic-dev
+
+  # Database Service (PostgreSQL)
+  db:
+    image: postgres:16-alpine
+    container_name: cosmic-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is not set. Please generate a password and add it to your docker-compose.yml or .env file.}
+      POSTGRES_DB: cosmic
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'postgres', '-d', 'cosmic']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    ports:
+      # Exposes the database port only to the host machine
+      # Change the first number to change the port the database is exposed on, not the second
+      # i.e 127.0.0.1:6543:5432
+      - '127.0.0.1:5432:5432'
+    volumes:
+      - cosmic-postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    env_file:
+      - .env
+    networks:
+      - cosmic-dev
+
+volumes:
+  cosmic-postgres-data:
+
+networks:
+  cosmic-dev:
+    name: cosmic-dev

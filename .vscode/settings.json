@@ -1,0 +1,49 @@
+{
+	"files.readonlyInclude": {
+		"**/.svelte-kit/*/**": true,
+		"pnpm-lock.yaml": true,
+		"bun.lock": true
+	},
+	"files.watcherExclude": {
+		"**/.svelte-kit/*/**": true,
+		"pnpm-lock.yaml": true,
+		"bun.lock": true
+	},
+	"search.exclude": {
+		"**/.svelte-kit/**": true,
+		"pnpm-lock.yaml": true,
+		"bun.lock": true
+	},
+
+	"explorer.fileNesting.enabled": true,
+	"explorer.fileNesting.patterns": {
+		"tsconfig.json": "tsconfig.*.json, env.d.ts",
+		"vite.config.*": "jsconfig*, vitest.config.*, cypress.config.*, playwright.config.*",
+		"package.json": "vite.config.*,components.json, .markdownlint.json, svelte.config.*, .gitignore, tsconfig.*, package-lock.json, pnpm*, .yarnrc*, yarn*, .eslint*, eslint*, .prettier*, prettier*, .editorconfig, .gitattributes, bun.lock*, .npmrc, tailwind.config.*, .oxlint*",
+		"tailwind.config.ts": "postcss.config.js"
+	},
+
+	// use LF line endings
+	"files.eol": "\n",
+
+	// more readable tabs
+	"workbench.editor.customLabels.patterns": {
+		"**/routes/**/+*.*": "${dirname}/${filename}.${extname}"
+	},
+
+	// smol performance improvements
+	"editor.minimap.renderCharacters": false,
+
+	// set prettier as default formatter for json, ts, js, html, css
+	"[json][jsonc][typescript][javascript][html][css]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+
+	// svelte support
+	"svelte.enable-ts-plugin": true,
+	"[svelte]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"typescript.tsdk": "node_modules/typescript/lib",
+	"eslint.useFlatConfig": true
+}
