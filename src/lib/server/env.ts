@@ -51,7 +51,7 @@ export const getDatabaseEnvVars = () => {
 	const dbUser = env.DB_USER || 'postgres';
 	const dbName = env.DB_NAME || 'cosmic';
 	const dbPort = env.DB_PORT || '5432';
-	const dbHost = env.DB_HOST || 'localhost';
+	const dbHost = env.DB_HOST || 'db';
 	const dbSslMode = env.DB_SSLMODE || 'disable';
 	const dbPassword = env.DB_PASSWORD;
 
@@ -60,7 +60,7 @@ export const getDatabaseEnvVars = () => {
 	if (!env.DB_USER) usingDefaults.push('DB_USER -> postgres');
 	if (!env.DB_NAME) usingDefaults.push('DB_NAME -> cosmic');
 	if (!env.DB_PORT) usingDefaults.push('DB_PORT -> 5432');
-	if (!env.DB_HOST) usingDefaults.push('DB_HOST -> localhost');
+	if (!env.DB_HOST) usingDefaults.push('DB_HOST -> db');
 
 	// log the configuration
 	logger.debug(
