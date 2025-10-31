@@ -23,6 +23,8 @@ services:
       # --- Database ---
       # for security reasons, set DB_PASSWORD. This will be used for the database connection.
       # you can also use `openssl rand -base64 32` to generate a random password
+      # then replace it like: DB_PASSWORD: <generated_password>
+      # THIS SHOULD BE THE SAME PASSWORD AS THE PASSWORD IN THE POSTGRES SERVICE BELOW (UNLESS USING A DIFFERENT DATABASE)
       DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is not set. Please generate a password and add it to your docker-compose.yml }
 
       # --- Site ---
@@ -87,6 +89,11 @@ services:
     container_name: cosmic-db
     environment:
       POSTGRES_USER: postgres
+
+      # Generate database password
+      # openssl rand -base64 32
+      # then replace it like: DB_PASSWORD: <generated_password>.
+      # THIS SHOULD BE THE SAME PASSWORD AS THE DB_PASSWORD IN THE COSMIC SERVICE ABOVE (UNLESS USING A DIFFERENT DATABASE)
       POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is not set. Please generate a password and add it to your docker-compose.yml or .env file.}
       POSTGRES_DB: cosmic
     healthcheck:

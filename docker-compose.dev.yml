@@ -83,7 +83,7 @@ services:
   # Database Service (PostgreSQL)
   db:
     image: postgres:16-alpine
-    container_name: cosmic-db
+    container_name: cosmic-dev-db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is not set. Please generate a password and add it to your docker-compose.yml or .env file.}

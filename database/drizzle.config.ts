@@ -11,14 +11,17 @@ const dbSslMode = process.env.DB_SSLMODE || 'disable';
 const dbPassword = process.env.DB_PASSWORD;
 if (!dbPassword) throw new Error('DB_PASSWORD is required');
 
-const baseUrl = `postgres://${dbUser}:${dbPassword}@${dbHost}:${dbPort}/${dbName}`;
-const DATABASE_URL = dbSslMode !== 'disable' ? `${baseUrl}?sslmode=${dbSslMode}` : baseUrl;
-
 export default defineConfig({
-	out: './drizzle',
-	schema: './schema',
+	// from root level
+	out: './database/drizzle',
+	schema: './database/schema',
 	dbCredentials: {
-		url: DATABASE_URL,
+		host: dbHost,
+		port: Number(dbPort),
+		user: dbUser,
+		password: dbPassword,
+		database: dbName,
+		ssl: dbSslMode !== 'disable',
 	},
 	verbose: true,
 	strict: true,

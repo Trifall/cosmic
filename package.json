@@ -20,9 +20,9 @@
 		"lint:eslint": "eslint \"./src/**/*.svelte\" --cache",
 		"fullcheck": "bun run test && bun run check && bun run lint:fix && bun run format:fix && bun run build",
 		"update-packages": "bun update",
-		"db:generate": "cd database && bunx drizzle-kit generate --config ./drizzle.config.ts",
-		"db:migrate": "cd database && bunx drizzle-kit migrate --config ./drizzle.config.ts",
-		"db:push": "cd database && bunx drizzle-kit push --config ./drizzle.config.ts",
+		"db:generate": "bunx drizzle-kit generate --config ./database/drizzle.config.ts",
+		"db:migrate": "bunx drizzle-kit migrate --config ./database/drizzle.config.ts",
+		"db:push": "bunx drizzle-kit push --config ./database/drizzle.config.ts",
 		"db:auth-generate": "bun x @better-auth/cli@latest generate --y --config ./src/lib/server/auth.ts --output ./database/schema/auth.schema.ts && bun run format:fix",
 		"db:deploy": "bun run db:migrate"
 	},
