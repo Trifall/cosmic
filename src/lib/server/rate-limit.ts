@@ -15,7 +15,6 @@ class RateLimitService {
 	private unauthLimiter: RateLimiterMemory | null = null;
 	private unauthGlobalLimiter: RateLimiterMemory | null = null;
 	private initialized = false;
-	private initializingPromise: Promise<void> | null = null;
 
 	/**
 	 * Initialize the rate limiter with current settings (internal implementation)
@@ -104,29 +103,14 @@ class RateLimitService {
 	/**
 	 * Initialize the rate limiter with current settings
 	 * This should be called at server startup and when settings are updated
-	 * Uses mutex to prevent concurrent initialization
 	 */
 	async initialize() {
-		// If already initialized, return immediately
 		if (this.initialized) {
 			return;
 		}
 
-		// If initialization is already in progress, wait for it
-		if (this.initializingPromise) {
-			await this.initializingPromise;
-			return;
-		}
-
-		// Start initialization with mutex
-		this.initializingPromise = this.doInitialize();
-
-		try {
-			await this.initializingPromise;
-			this.initialized = true;
-		} finally {
-			this.initializingPromise = null;
-		}
+		await this.doInitialize();
+		this.initialized = true;
 	}
 
 	/**
@@ -420,7 +404,6 @@ class RateLimitService {
 	async reload() {
 		logger.info('Reloading rate limiter configuration...');
 		this.initialized = false;
-		this.initializingPromise = null; // Clear any pending initialization
 		await this.initialize();
 	}
 }

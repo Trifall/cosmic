@@ -23,7 +23,7 @@ class SettingsService {
 	 * Initialize all missing settings with their default values
 	 * This runs once on first settings access
 	 */
-	private async initializeDefaults() {
+	async initialize(): Promise<void> {
 		if (this.initialized) return;
 
 		logger.info('Initializing default settings...');
@@ -44,7 +44,12 @@ class SettingsService {
 				}));
 
 			if (missingSettings.length > 0) {
-				await db.insert(settings).values(missingSettings);
+				// use transaction with conflict handling to prevent race conditions
+				await db.transaction(async (tx) => {
+					for (const setting of missingSettings) {
+						await tx.insert(settings).values(setting).onConflictDoNothing();
+					}
+				});
 				logger.info(`Initialized ${missingSettings.length} default settings`);
 			}
 
@@ -67,7 +72,7 @@ class SettingsService {
 	async getSettingObjectByKey<K extends keyof AllSettings>(
 		key: K
 	): Promise<(Omit<Settings, 'value'> & { value: AllSettings[K] }) | null> {
-		await this.initializeDefaults();
+		await this.initialize();
 
 		const result = await db.select().from(settings).where(eq(settings.key, key)).limit(1);
 		if (result.length === 0) {
@@ -86,7 +91,7 @@ class SettingsService {
 	 * Update setting by key (compatible with existing helper)
 	 */
 	async updateSettingByKey<K extends keyof AllSettings>(key: K, value: AllSettings[K]) {
-		await this.initializeDefaults();
+		await this.initialize();
 
 		// validate value if we have a schema for it
 		const config = SETTINGS_CONFIG[key as keyof typeof SETTINGS_CONFIG];
@@ -109,7 +114,7 @@ class SettingsService {
 	 * Bulk update settings with transaction support (compatible with existing helper)
 	 */
 	async updateSettings(settingsData: Partial<AllSettings>) {
-		await this.initializeDefaults();
+		await this.initialize();
 
 		return await db.transaction(async (tx) => {
 			// remove all undefined values keys
@@ -171,7 +176,7 @@ class SettingsService {
 	 * Get all settings from database (compatible with existing helper)
 	 */
 	async getAllSettings() {
-		await this.initializeDefaults();
+		await this.initialize();
 		return await db.select().from(settings);
 	}
 
@@ -179,7 +184,7 @@ class SettingsService {
 	 * Get a setting value by key with type safety and defaults
 	 */
 	async get<K extends AppSettingKey>(key: K): Promise<AllSettings[K]> {
-		await this.initializeDefaults();
+		await this.initialize();
 
 		if (this.cache.has(key)) {
 			return this.cache.get(key) as AllSettings[K];

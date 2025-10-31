@@ -61,59 +61,39 @@ if (!building) {
 	}
 
 	/*
-	 * Database setup
-	 * This applies search triggers to the database
+	 * sequential service initialization
+	 * database -> settings -> rate limiting -> backups -> paste cleanup
 	 */
 	(async () => {
 		try {
+			logger.info('Step 1: Setting up database...');
 			await setupDatabase();
-		} catch (error) {
-			logger.error(`Fatal: Failed to setup database: ${error}`);
-		}
-	})();
+			logger.info('Database setup completed');
 
-	/* Start the backup scheduler
-	 *  Handles both file system and S3/R2 backups
-	 *  README for environment variables and instructions
-	 */
+			logger.info('Step 2: Initializing settings service...');
+			const { settingsService } = await import('$lib/server/settings');
+			await settingsService.get('firstTimeSetupCompleted'); // This triggers initialization
+			logger.info('Settings service initialized');
 
-	(async () => {
-		try {
+			logger.info('Step 3: Initializing rate limiting service...');
+			await rateLimitService.initialize();
+			logger.info('Rate limiting service initialized');
+
+			logger.info('Step 4: Starting backup scheduler...');
 			const backupScheduler = BackupScheduler.getInstance();
 			await backupScheduler.start();
-		} catch (error) {
-			logger.error(`Fatal: Failure in the backup scheduler: ${error}`);
-		}
-	})();
+			logger.info('Backup scheduler started');
 
-	/* Start the paste cleanup scheduler
-	 *  Handles automatic paste cleanup for expired pastes
-	 *
-	 *  Note: Pastes are not cleaned up immediately at expire time, but are always server-side checked before returning to the client
-	 *  This prevents the client from accessing expired pastes, and this scheduler clears the backlog in batches
-	 */
-	(async () => {
-		try {
-			logger.info('Initializing paste cleanup scheduler...');
+			logger.info('Step 5: Starting paste cleanup scheduler...');
 			const cleanupScheduler = PasteCleanupScheduler.getInstance();
 			await cleanupScheduler.start();
-			logger.info('Paste cleanup scheduler started successfully, running a cleanup...');
+			logger.info('Paste cleanup scheduler started successfully, running initial cleanup...');
 			await cleanupScheduler.triggerCleanup();
-		} catch (error) {
-			logger.error(`Fatal: Failure in the paste cleanup scheduler: ${error}`);
-		}
-	})();
 
-	/* Initialize rate limiting service
-	 *  Handles rate limiting for authenticated users on paste operations
-	 */
-	(async () => {
-		try {
-			logger.info('Initializing rate limiting service...');
-			await rateLimitService.initialize();
-			logger.info('Rate limiting service initialized successfully');
+			logger.info('All services initialized successfully');
 		} catch (error) {
-			logger.error(`Fatal: Failure in the rate limiting service: ${error}`);
+			logger.error(`Fatal: Failed to initialize services: ${error}`);
+			process.exit(1);
 		}
 	})();
 }
@@ -151,7 +131,7 @@ export const handle: Handle = sequence(
 				throw redirect(302, ROUTES.SETUP);
 			}
 		} catch (error) {
-			// if it's a redirect, re-throw it
+			// if it is a redirect, re-throw it
 			if (isRedirect(error)) {
 				throw error;
 			}
