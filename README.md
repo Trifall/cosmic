@@ -109,6 +109,8 @@ The application includes a complete Docker setup with automatic database initial
 
 On startup, the application automatically applies any necessary database migrations, ensuring your schema is always up-to-date with the latest version.
 
+For reference, the docker hub link is located at https://hub.docker.com/r/jerrent/cosmic
+
 #### Quick Start
 
 1. Generate required secrets:
