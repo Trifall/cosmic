@@ -85,7 +85,9 @@
 			tick().then(() => {
 				const newUrl = new URL(page.url);
 				newUrl.searchParams.delete('forkedFrom');
-				replaceState(resolve(newUrl.toString() as Pathname), {});
+
+				const resultURL = newUrl.pathname + newUrl.search;
+				replaceState(resolve(resultURL as Pathname), {});
 			});
 			return;
 		}
@@ -142,7 +144,9 @@
 				// clean up URL parameters to avoid reforking on refresh
 				const newUrl = new URL(page.url);
 				newUrl.searchParams.delete('forkedFrom');
-				replaceState(resolve(newUrl.toString() as Pathname), {});
+
+				const resultURL = newUrl.pathname + newUrl.search;
+				replaceState(resolve(resultURL as Pathname), {});
 			});
 		}
 	});
@@ -189,7 +193,7 @@
 {:else}
 	<form
 		method="POST"
-		action="?/createPaste"
+		action="/?/createPaste"
 		use:enhance={() => {
 			isSubmitting = true;
 			errors = { _form: [] };
