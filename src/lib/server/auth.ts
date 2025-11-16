@@ -70,19 +70,11 @@ const options = {
 			create: {
 				before: async (user, ctx) => {
 					// allow admin-created users to bypass public registration check
-					const isAdminCreated = (ctx?.body as unknown as { isAdminCreated: boolean })
-						?.isAdminCreated;
-					if (isAdminCreated) {
-						// check setting for first time setup completion
-						const allowAdminCreatedUser =
-							!(await getSetting('firstTimeSetupCompleted')) || envPrivate.FORCE_FIRST_TIME_SETUP;
-						if (allowAdminCreatedUser) {
-							logger.info(
-								'First-time setup not completed, allowing admin-created user to register'
-							);
-							return;
-						}
-					}
+					const isAdminCreated = ctx?.body?.isAdminCreated || ctx?.body?.data?.isAdminCreated;
+
+					// if admin-created, skip public registration check
+					if (isAdminCreated) return;
+
 					// check if public registration is enabled for regular signups (with env override)
 					const registrationEnabled = await getSetting('publicRegistration');
 
