@@ -125,7 +125,7 @@ export const load: PageServerLoad = async ({
 
 			forkedPasteData = forkResult.data;
 
-			logger.info(`Forked paste data: ${JSON.stringify(forkedPasteData, null, 2)}`);
+			logger.debug(`Forked paste data: ${JSON.stringify(forkedPasteData, null, 2)}`);
 		}
 
 		return {
