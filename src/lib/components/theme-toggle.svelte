@@ -1,4 +1,3 @@
-<!-- Per Windsurf Rules: Using ShadCN Svelte components -->
 <script lang="ts">
 	import { Moon, Sun } from '@lucide/svelte/icons';
 	import { toggleMode } from 'mode-watcher';

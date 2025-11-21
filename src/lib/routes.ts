@@ -19,7 +19,6 @@ export const ROUTES = {
 		},
 		PASTES: '/admin/pastes',
 		SETTINGS: '/admin/settings',
-		LIBRARY: '/admin/library',
 	},
 	HOME: '/',
 	DASHBOARD: '/dashboard',
