@@ -75,7 +75,7 @@
 		"postgres": "^3.4.7",
 		"rate-limiter-flexible": "^8.2.1",
 		"runed": "^0.36.0",
-		"svelte": "^5.43.14",
+		"svelte": "5.43.12",
 		"svelte-adapter-bun": "0.5.2",
 		"svelte-sonner": "^1.0.6",
 		"tailwind-merge": "^3.4.0",
