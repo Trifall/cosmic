@@ -15,6 +15,19 @@ class RateLimitService {
 	private unauthLimiter: RateLimiterMemory | null = null;
 	private unauthGlobalLimiter: RateLimiterMemory | null = null;
 	private initialized = false;
+	private initializationPromise: Promise<void> | null = null;
+
+	private async waitForInitializationToFinish() {
+		if (!this.initializationPromise) {
+			return;
+		}
+
+		try {
+			await this.initializationPromise;
+		} catch (error) {
+			logger.warn('Previous rate limiter initialization failed', error);
+		}
+	}
 
 	/**
 	 * Initialize the rate limiter with current settings (internal implementation)
@@ -109,8 +122,23 @@ class RateLimitService {
 			return;
 		}
 
-		await this.doInitialize();
-		this.initialized = true;
+		if (this.initializationPromise) {
+			return this.initializationPromise;
+		}
+
+		this.initializationPromise = (async () => {
+			await this.doInitialize();
+			this.initialized = true;
+		})()
+			.catch((error) => {
+				// rethrow to allow awaiting callers to handle initialization issues
+				throw error;
+			})
+			.finally(() => {
+				this.initializationPromise = null;
+			});
+
+		return this.initializationPromise;
 	}
 
 	/**
@@ -403,6 +431,7 @@ class RateLimitService {
 	 */
 	async reload() {
 		logger.info('Reloading rate limiter configuration...');
+		await this.waitForInitializationToFinish();
 		this.initialized = false;
 		await this.initialize();
 	}

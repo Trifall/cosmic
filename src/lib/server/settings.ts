@@ -18,52 +18,77 @@ const logger = createChildLogger('Settings');
 class SettingsService {
 	private cache = new Map<string, unknown>();
 	private initialized = false;
+	private initializationPromise: Promise<void> | null = null;
+
+	private async waitForInitializationToFinish() {
+		if (!this.initializationPromise) {
+			return;
+		}
+
+		try {
+			await this.initializationPromise;
+		} catch (error) {
+			logger.warn('Previous settings initialization failed', error);
+		}
+	}
 
 	/**
 	 * Initialize all missing settings with their default values
 	 * This runs once on first settings access
 	 */
 	async initialize(): Promise<void> {
-		if (this.initialized) return;
-
-		logger.info('Initializing default settings...');
-
-		try {
-			// get all existing settings from database
-			const existingSettings = await db.select().from(settings);
-			const existingKeys = new Set(existingSettings.map((s) => s.key));
-
-			// insert missing settings with defaults
-			const missingSettings = getSettingsEntries()
-				.filter(([key]) => !existingKeys.has(key))
-				.map(([key, config]) => ({
-					key,
-					value: config.defaultValue,
-					description: config.description,
-					category: config.category,
-				}));
-
-			if (missingSettings.length > 0) {
-				// use transaction with conflict handling to prevent race conditions
-				await db.transaction(async (tx) => {
-					for (const setting of missingSettings) {
-						await tx.insert(settings).values(setting).onConflictDoNothing();
-					}
-				});
-				logger.info(`Initialized ${missingSettings.length} default settings`);
-			}
-
-			// cache all settings for performance
-			const allSettings = await db.select().from(settings);
-			for (const setting of allSettings) {
-				this.cache.set(setting.key!, setting.value);
-			}
-
-			this.initialized = true;
-		} catch (error) {
-			logger.error(`Failed to initialize settings: ${error}`);
-			throw error;
+		if (this.initialized) {
+			return;
 		}
+
+		if (this.initializationPromise) {
+			return this.initializationPromise;
+		}
+
+		this.initializationPromise = (async () => {
+			logger.info('Initializing default settings...');
+
+			try {
+				// get all existing settings from database
+				const existingSettings = await db.select().from(settings);
+				const existingKeys = new Set(existingSettings.map((s) => s.key));
+
+				// insert missing settings with defaults
+				const missingSettings = getSettingsEntries()
+					.filter(([key]) => !existingKeys.has(key))
+					.map(([key, config]) => ({
+						key,
+						value: config.defaultValue,
+						description: config.description,
+						category: config.category,
+					}));
+
+				if (missingSettings.length > 0) {
+					// use transaction with conflict handling to prevent race conditions
+					await db.transaction(async (tx) => {
+						for (const setting of missingSettings) {
+							await tx.insert(settings).values(setting).onConflictDoNothing();
+						}
+					});
+					logger.info(`Initialized ${missingSettings.length} default settings`);
+				}
+
+				// cache all settings for performance
+				const allSettings = await db.select().from(settings);
+				for (const setting of allSettings) {
+					this.cache.set(setting.key!, setting.value);
+				}
+
+				this.initialized = true;
+			} catch (error) {
+				logger.error(`Failed to initialize settings: ${error}`);
+				throw error;
+			} finally {
+				this.initializationPromise = null;
+			}
+		})();
+
+		return this.initializationPromise;
 	}
 
 	/**
@@ -119,7 +144,7 @@ class SettingsService {
 		return await db.transaction(async (tx) => {
 			// remove all undefined values keys
 			const filteredSettingsData = Object.fromEntries(
-				Object.entries(settingsData).filter((value) => !!value)
+				Object.entries(settingsData).filter(([_, value]) => value !== undefined)
 			) as Partial<AllSettings>;
 
 			// process each setting update within the transaction
@@ -164,11 +189,13 @@ class SettingsService {
 	 * delete all settings (compatible with existing helper)
 	 */
 	async deleteSettings() {
+		await this.waitForInitializationToFinish();
 		const result = await db.delete(settings);
 
 		// clear cache
 		this.cache.clear();
 		this.initialized = false;
+		this.initializationPromise = null;
 		return result;
 	}
 
@@ -211,9 +238,11 @@ class SettingsService {
 	/**
 	 * Reset cache - useful for testing or when settings are changed externally
 	 */
-	resetCache(): void {
+	async resetCache(): Promise<void> {
+		await this.waitForInitializationToFinish();
 		this.cache.clear();
 		this.initialized = false;
+		this.initializationPromise = null;
 	}
 }
 
