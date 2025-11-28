@@ -2,6 +2,8 @@ import type { DBUser } from '$database/schema';
 import { settings } from '@/database/schema';
 import { error } from '@sveltejs/kit';
 import { getRequestEvent, query } from '$app/server';
+import { isR2UploadConfigured } from '$lib/server/backups/r2-uploader';
+import { isS3UploadConfigured } from '$lib/server/backups/s3-uploader';
 import { db } from '$lib/server/db';
 import { createChildLogger } from '$lib/server/logger';
 import { isUnauthenticatedUser } from '$src/lib/utils/format';
@@ -36,8 +38,14 @@ export const getAllSettingsQuery = query(async () => {
 
 		logger.debug(`Retrieved ${settingsData.length} settings`);
 
+		// check S3 and R2 configuration status (without exposing credentials)
+		const s3Configured = isS3UploadConfigured();
+		const r2Configured = isR2UploadConfigured();
+
 		return {
 			settings: settingsData,
+			s3Configured,
+			r2Configured,
 		};
 	} catch (err) {
 		logger.error(`Error fetching settings: ${err}`);

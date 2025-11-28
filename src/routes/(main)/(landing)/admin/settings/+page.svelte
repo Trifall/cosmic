@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Settings } from '@/database/schema/system';
 	import { Info } from '@lucide/svelte';
+	import { untrack } from 'svelte';
 	import { toast } from 'svelte-sonner';
 	import { enhance } from '$app/forms';
 	import CronJobInput from '$lib/components/cron/CronJobInput.svelte';
@@ -31,7 +32,6 @@
 
 	const INITIAL_FORM_STATE = getInitialFormState();
 
-	// use remote query instead of page data
 	const settingsQuery = getAllSettingsQuery();
 
 	let isSubmitting = $state(false);
@@ -70,10 +70,23 @@
 	// react to query data changes
 	$effect(() => {
 		const data = settingsQuery.current;
-		if (data?.settings) {
-			updateFullFormState(data.settings);
+		if (data?.settings && settingsQuery.loading === false) {
+			untrack(() => {
+				updateFullFormState(data.settings);
+				// ensure S3/R2 are disabled if not configured (safety check)
+				if (data.s3Configured === false && formState.s3BackupEnabled) {
+					formState.s3BackupEnabled = false;
+				}
+				if (data.r2Configured === false && formState.r2BackupEnabled) {
+					formState.r2BackupEnabled = false;
+				}
+			});
 		}
 	});
+
+	// get configuration status from query
+	const s3Configured = $derived(settingsQuery.current?.s3Configured ?? false);
+	const r2Configured = $derived(settingsQuery.current?.r2Configured ?? false);
 </script>
 
 <svelte:head>
@@ -289,9 +302,23 @@
 						<!-- S3 Backup Toggle -->
 						<div class="flex items-center justify-between gap-2 rounded-lg border bg-card p-4">
 							<div class="space-y-1">
-								<label for="s3BackupEnabledSwitch" class="text-sm font-semibold">
-									S3 Database Backups
-								</label>
+								<div class="flex items-center">
+									<label for="s3BackupEnabledSwitch" class="text-sm font-semibold">
+										S3 Database Backups
+									</label>
+									{#if !s3Configured}
+										<Tooltip>
+											<TooltipTrigger>
+												<Info class="ml-2 h-4 w-4 text-muted-foreground" />
+											</TooltipTrigger>
+											<TooltipContent>
+												<p class="text-sm text-foreground">
+													Disabled because AWS S3 environment variables are not configured.
+												</p>
+											</TooltipContent>
+										</Tooltip>
+									{/if}
+								</div>
 								<p class="text-sm text-muted-foreground">
 									When enabled, database backups will be automatically uploaded to AWS S3. Requires
 									AWS credentials to be configured via environment variables.
@@ -307,7 +334,7 @@
 									<Switch
 										id="s3BackupEnabledSwitch"
 										bind:checked={formState.s3BackupEnabled}
-										disabled={isSubmitting}
+										disabled={isSubmitting || !s3Configured}
 									/>
 								{:else}
 									<Skeleton class="h-6 w-11" />
@@ -318,9 +345,23 @@
 						<!-- R2 Backup Toggle -->
 						<div class="flex items-center justify-between gap-2 rounded-lg border bg-card p-4">
 							<div class="space-y-1">
-								<label for="r2BackupEnabledSwitch" class="text-sm font-semibold">
-									Cloudflare R2 Database Backups
-								</label>
+								<div class="flex items-center">
+									<label for="r2BackupEnabledSwitch" class="text-sm font-semibold">
+										Cloudflare R2 Database Backups
+									</label>
+									{#if !r2Configured}
+										<Tooltip>
+											<TooltipTrigger>
+												<Info class="ml-2 h-4 w-4 text-muted-foreground" />
+											</TooltipTrigger>
+											<TooltipContent>
+												<p class="text-sm text-foreground">
+													Disabled because Cloudflare R2 environment variables are not configured.
+												</p>
+											</TooltipContent>
+										</Tooltip>
+									{/if}
+								</div>
 								<p class="text-sm text-muted-foreground">
 									When enabled, database backups will be automatically uploaded to Cloudflare R2.
 									Requires R2 credentials to be configured via environment variables.
@@ -336,7 +377,7 @@
 									<Switch
 										id="r2BackupEnabledSwitch"
 										bind:checked={formState.r2BackupEnabled}
-										disabled={isSubmitting}
+										disabled={isSubmitting || !r2Configured}
 									/>
 								{:else}
 									<Skeleton class="h-6 w-11" />

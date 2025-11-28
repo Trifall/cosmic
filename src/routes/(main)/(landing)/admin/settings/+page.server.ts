@@ -1,6 +1,8 @@
 import { getSetting, updateSettings } from '@/src/lib/server/settings';
 import { fail } from '@sveltejs/kit';
 import { BackupScheduler } from '$lib/server/backups/backup-scheduler';
+import { isR2UploadConfigured } from '$lib/server/backups/r2-uploader';
+import { isS3UploadConfigured } from '$lib/server/backups/s3-uploader';
 import { createChildLogger } from '$lib/server/logger';
 import { reloadRateLimiter } from '$lib/server/rate-limit';
 import {
@@ -19,6 +21,26 @@ export const actions = {
 		// preserve firstTimeSetupCompleted value - it should never be changed from admin settings
 		const currentSetupCompleted = await getSetting('firstTimeSetupCompleted');
 
+		// check S3 and R2 configuration status
+		const s3Configured = isS3UploadConfigured();
+		const r2Configured = isR2UploadConfigured();
+
+		// get form values
+		const s3BackupEnabledFormValue = formData.get('s3BackupEnabled') === 'true';
+		const r2BackupEnabledFormValue = formData.get('r2BackupEnabled') === 'true';
+
+		// enforce configuration requirements - disable if not configured
+		const s3BackupEnabled = s3Configured ? s3BackupEnabledFormValue : false;
+		const r2BackupEnabled = r2Configured ? r2BackupEnabledFormValue : false;
+
+		// log warning if user tried to enable without configuration
+		if (s3BackupEnabledFormValue && !s3Configured) {
+			logger.warn('Attempted to enable S3 backups without proper configuration');
+		}
+		if (r2BackupEnabledFormValue && !r2Configured) {
+			logger.warn('Attempted to enable R2 backups without proper configuration');
+		}
+
 		const data = {
 			firstTimeSetupCompleted: currentSetupCompleted,
 			// system settings
@@ -31,8 +53,8 @@ export const actions = {
 
 			// backup settings
 			filesystemBackupEnabled: formData.get('filesystemBackupEnabled') === 'true',
-			s3BackupEnabled: formData.get('s3BackupEnabled') === 'true',
-			r2BackupEnabled: formData.get('r2BackupEnabled') === 'true',
+			s3BackupEnabled,
+			r2BackupEnabled,
 			backupCronPattern: (formData.get('backupCronPattern') || '') as string,
 			backupRetentionDays: Number(formData.get('backupRetentionDays') || '30'),
 			enableAutoZip: formData.get('enableAutoZip') === 'true',
