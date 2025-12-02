@@ -68,7 +68,7 @@
 		if (accountAge.months > 0) {
 			return `${accountAge.months} month${accountAge.months > 1 ? 's' : ''}`;
 		}
-		return `${accountAge.days} day${accountAge.days > 1 ? 's' : ''}`;
+		return `${accountAge.days} day${accountAge.days > 1 || accountAge.days === 0 ? 's' : ''}`;
 	};
 </script>
 
