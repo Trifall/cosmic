@@ -43,6 +43,7 @@
 
 	const handleAccountClick = () => {
 		onItemClick?.();
+		goto(resolve(ROUTES.PROFILE as Pathname));
 	};
 
 	const userName = user ? formatUserName(user) : 'Guest';
