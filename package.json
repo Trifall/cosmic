@@ -47,8 +47,8 @@
 		"prettier-plugin-tailwindcss": "0.7.1",
 		"svelte-check": "^4.3.4",
 		"typescript": "^5.9.3",
-		"typescript-eslint": "^8.48.0",
-		"vitest": "^4.0.14"
+		"typescript-eslint": "^8.48.1",
+		"vitest": "^4.0.15"
 	},
 	"dependencies": {
 		"@lucide/svelte": "^0.555.0",
@@ -58,7 +58,7 @@
 		"@tailwindcss/typography": "^0.5.19",
 		"@tanstack/table-core": "^8.21.3",
 		"autoprefixer": "^10.4.22",
-		"better-auth": "^1.4.4",
+		"better-auth": "^1.4.5",
 		"bits-ui": "1.5.2",
 		"clsx": "^2.1.1",
 		"croner": "^9.1.0",
@@ -74,7 +74,7 @@
 		"mode-watcher": "^1.1.0",
 		"postgres": "^3.4.7",
 		"rate-limiter-flexible": "^8.3.0",
-		"runed": "^0.36.0",
+		"runed": "^0.37.0",
 		"svelte": "5.43.12",
 		"svelte-adapter-bun": "0.5.2",
 		"svelte-sonner": "^1.0.7",
