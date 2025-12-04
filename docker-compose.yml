@@ -18,6 +18,7 @@ services:
 
       # Better Auth Secret - This is required for authentication to work
       # you can generate a good secret using the terminal command `openssl rand -base64 32`
+      # MUST BE ATLEAST 32 CHARACTERS LONG
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET is not set. Please generate a secret and add it to your docker-compose.yml}
 
       # --- Database ---
