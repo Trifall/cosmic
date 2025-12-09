@@ -35,4 +35,9 @@ stats.html
 
 .mcp.json
 
-docker-compose.local.dev
+docker-compose.local.*
+docker-compose.dev.local.*
+dev-test/*
+opencode*
+.agent*
+AGENTS*
