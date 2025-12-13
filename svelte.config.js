@@ -19,6 +19,11 @@ const config = {
 			$database: './database',
 			'@': './',
 		},
+		csrf: {
+			// when behind a reverse proxy, trust the public URL origin
+			// PUBLIC_WEB_UI_URL is the public-facing URL configured in Docker
+			trustedOrigins: [process.env.PUBLIC_WEB_UI_URL].filter(Boolean),
+		},
 		experimental: {
 			remoteFunctions: true,
 		},
