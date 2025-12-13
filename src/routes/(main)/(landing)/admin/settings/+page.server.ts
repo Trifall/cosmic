@@ -20,6 +20,7 @@ export const actions = {
 
 		// preserve firstTimeSetupCompleted value - it should never be changed from admin settings
 		const currentSetupCompleted = await getSetting('firstTimeSetupCompleted');
+		const currentSearchResultsLimit = await getSetting('searchResultsLimit');
 
 		// check S3 and R2 configuration status
 		const s3Configured = isS3UploadConfigured();
@@ -47,7 +48,10 @@ export const actions = {
 			publicRegistration: formData.get('publicRegistration') === 'true',
 			maxPastesPerUser: Number(formData.get('maxPastesPerUser') || '0'),
 			enableFullTextSearch: formData.get('enableFullTextSearch') === 'true',
-			searchResultsLimit: Number(formData.get('searchResultsLimit') || '0'),
+			searchResultsLimit:
+				formData.get('enableFullTextSearch') === 'true'
+					? Number(formData.get('searchResultsLimit') || '50')
+					: currentSearchResultsLimit,
 			enableUnauthenticatedPasteCreation:
 				formData.get('enableUnauthenticatedPasteCreation') === 'true',
 
