@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { DBUser } from '$database/schema';
 	import { toast } from 'svelte-sonner';
+	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import {
 		AlertDialog,
@@ -16,7 +17,6 @@
 	import { Spinner } from '$lib/components/ui/spinner';
 	import { searchUsers } from '$lib/remote/users.remote';
 	import type { SinglePasteData } from '$lib/shared/pastes';
-	import { changeOwner } from './admin-pastes.remote';
 
 	interface Props {
 		paste: SinglePasteData | null;
@@ -201,39 +201,48 @@
 
 		<AlertDialogFooter>
 			<AlertDialogCancel onclick={handleClose} disabled={isChangingOwner}>Cancel</AlertDialogCancel>
-			<AlertDialogAction
-				disabled={!selectedNewOwner || isChangingOwner}
-				class="bg-orange-500 hover:bg-orange-600"
-				onclick={async () => {
+			<form
+				method="POST"
+				action="?/changeOwner"
+				class="inline-block"
+				use:enhance={async () => {
 					if (!paste?.id || !selectedNewOwner?.id || !paste?.owner_id) return;
 
 					isChangingOwner = true;
 					const toastId = toast.loading('Changing paste owner...');
 
-					try {
-						// call remote function to change ownership
-						await changeOwner({
-							pasteId: paste.id,
-							newOwnerId: selectedNewOwner.id,
-							currentOwnerId: paste.owner_id,
-						});
-
+					return async ({ result }) => {
 						isChangingOwner = false;
 						toast.dismiss(toastId);
-						toast.success('Paste ownership changed successfully');
-						onClose();
 
-						// revalidate page data to reflect ownership change in the table
-						await invalidateAll();
-					} catch (error) {
-						isChangingOwner = false;
-						toast.dismiss(toastId);
-						toast.error(`Failed to change owner: ${error}`);
-					}
+						if (result.type === 'success') {
+							// Check if the action returned success logic via data
+							// Since standard actions return success/fail, check result.type
+							if (result.data?.success) {
+								toast.success('Paste ownership changed successfully');
+								onClose();
+								await invalidateAll();
+							} else {
+								// if result.data.message exists
+								toast.error(result.data?.message?.toString() || 'Failed to change owner');
+							}
+						} else {
+							toast.error('Failed to change owner');
+						}
+					};
 				}}
 			>
-				{isChangingOwner ? 'Changing...' : 'Change Owner'}
-			</AlertDialogAction>
+				<input type="hidden" name="pasteId" value={paste?.id} />
+				<input type="hidden" name="newOwnerId" value={selectedNewOwner?.id} />
+				<input type="hidden" name="currentOwnerId" value={paste?.owner_id} />
+				<AlertDialogAction
+					type="submit"
+					disabled={!selectedNewOwner || isChangingOwner}
+					class="bg-orange-500 hover:bg-orange-600"
+				>
+					{isChangingOwner ? 'Changing...' : 'Change Owner'}
+				</AlertDialogAction>
+			</form>
 		</AlertDialogFooter>
 	</AlertDialogContent>
 </AlertDialog>

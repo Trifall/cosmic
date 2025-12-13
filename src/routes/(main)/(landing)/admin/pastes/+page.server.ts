@@ -64,3 +64,98 @@ export const load: PageServerLoad = async ({ parent, url }) => {
 		};
 	}
 };
+
+export const actions = {
+	deletePaste: async ({ request, locals }) => {
+		const { user } = locals;
+
+		// check permissions - admin only
+		const isAdmin = locals.isAdmin;
+		if (!user?.id || !isAdmin) {
+			logger.warn('Unauthorized admin paste deletion attempt');
+			throw error(403, 'Admin access required');
+		}
+
+		const formData = await request.formData();
+		const pasteId = formData.get('pasteId')?.toString();
+
+		if (!pasteId) {
+			return { success: false, message: 'Paste ID is required' };
+		}
+
+		logger.debug(`Delete paste action called for pasteId: ${pasteId} by user: ${user.id}`);
+
+		const { findPasteBySlug, deletePaste } = await import('$lib/server/pastes');
+
+		try {
+			// get paste details to verify existence
+			const paste = await findPasteBySlug(pasteId);
+			if (!paste) {
+				return { success: false, message: 'Paste not found' };
+			}
+
+			// admin can delete any paste, no ownership check needed
+			const result = await deletePaste(pasteId);
+
+			if (!result) {
+				return { success: false, message: 'Failed to delete paste' };
+			}
+
+			logger.info(`Paste deleted successfully: ${pasteId} by admin user: ${user.id}`);
+			return { success: true };
+		} catch (err) {
+			logger.error(`Error deleting paste ${pasteId}: ${err}`);
+			return { success: false, message: 'An unexpected error occurred' };
+		}
+	},
+
+	changeOwner: async ({ request, locals }) => {
+		const { user } = locals;
+
+		// check permissions - admin only
+		const isAdmin = locals.isAdmin;
+		if (!user?.id || !isAdmin) {
+			logger.warn('Unauthorized admin paste owner change attempt');
+			throw error(403, 'Admin access required');
+		}
+
+		const formData = await request.formData();
+		const pasteId = formData.get('pasteId')?.toString();
+		const newOwnerId = formData.get('newOwnerId')?.toString();
+		const currentOwnerId = formData.get('currentOwnerId')?.toString();
+
+		if (!pasteId || !newOwnerId || !currentOwnerId) {
+			return { success: false, message: 'Missing required fields' };
+		}
+
+		logger.debug(
+			`Change owner action called for pasteId: ${pasteId}, from: ${currentOwnerId}, to: ${newOwnerId}`
+		);
+
+		const { findPasteBySlug, transferPasteOwnership } = await import('$lib/server/pastes');
+
+		try {
+			// verify paste exists
+			const paste = await findPasteBySlug(pasteId);
+			if (!paste) {
+				return { success: false, message: 'Paste not found' };
+			}
+
+			// transfer ownership
+			const result = await transferPasteOwnership(pasteId, newOwnerId, currentOwnerId);
+
+			if (!result.success) {
+				return { success: false, message: result.message || 'Failed to transfer ownership' };
+			}
+
+			logger.info(
+				`Paste ownership transferred: ${pasteId} from ${currentOwnerId} to ${newOwnerId} by admin user: ${user.id}`
+			);
+
+			return { success: true, message: 'Ownership transferred successfully' };
+		} catch (err) {
+			logger.error(`Error changing owner for paste ${pasteId}: ${err}`);
+			return { success: false, message: 'An unexpected error occurred' };
+		}
+	},
+};

@@ -3,6 +3,7 @@
 	import type { ColumnDef } from '@tanstack/table-core';
 	import { createRawSnippet } from 'svelte';
 	import { toast } from 'svelte-sonner';
+	import { enhance } from '$app/forms';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import type { Pathname } from '$app/types';
@@ -22,7 +23,6 @@
 	import { capitalizeFirstLetter, getPublicSiteName } from '$src/lib/utils/format';
 	import { Button } from '$components/ui/button';
 	import type { PageProps } from './$types';
-	import { deletePaste as deletePasteCommand } from './admin-pastes.remote';
 	import DataTableActions from './data-table-actions.svelte';
 	import PasteOwnerSelector from './paste-owner-selector.svelte';
 
@@ -311,35 +311,36 @@
 		</AlertDialogHeader>
 		<AlertDialogFooter>
 			<AlertDialogCancel>Cancel</AlertDialogCancel>
-			<AlertDialogAction
-				onclick={async () => {
+			<form
+				method="POST"
+				action="?/deletePaste"
+				use:enhance={async () => {
 					if (!pasteToDelete?.id) return;
-
+					const id = pasteToDelete.id; // capture for closure
 					const toastId = toast.loading('Deleting paste...');
 
-					try {
-						// handle optimistic UI update before deletion
-						if (tableRef) {
-							await tableRef.handleOptimisticDeletion(pasteToDelete.id);
-						}
-
-						// call remote function to delete paste
-						await deletePasteCommand({ pasteId: pasteToDelete.id });
-
-						isDeleteDialogOpen = false;
-						toast.dismiss(toastId);
-						toast.success('Paste deleted successfully');
-
-						// revalidate to update pagination and counts
-						await invalidateAll();
-					} catch (error) {
-						toast.dismiss(toastId);
-						toast.error(`Failed to delete paste: ${error}`);
+					// optimistic UI update
+					if (tableRef) {
+						await tableRef.handleOptimisticDeletion(id);
 					}
+					isDeleteDialogOpen = false;
+
+					return async ({ result }) => {
+						toast.dismiss(toastId);
+						if (result.type === 'success') {
+							toast.success('Paste deleted successfully');
+							await invalidateAll();
+						} else {
+							toast.error('Failed to delete paste');
+							// Revert optimistic update if needed (requires logic in table, or just invalidate)
+							await invalidateAll();
+						}
+					};
 				}}
 			>
-				Delete
-			</AlertDialogAction>
+				<input type="hidden" name="pasteId" value={pasteToDelete?.id} />
+				<AlertDialogAction type="submit">Delete</AlertDialogAction>
+			</form>
 		</AlertDialogFooter>
 	</AlertDialogContent>
 </AlertDialog>
