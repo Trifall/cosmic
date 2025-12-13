@@ -13,6 +13,7 @@ import { BackupScheduler } from '$lib/server/backups/backup-scheduler';
 import { PasteCleanupScheduler } from '$lib/server/pastes/cleanup-scheduler';
 import { rateLimitService } from '$lib/server/rate-limit';
 import { getSetting } from '$lib/server/settings';
+import { csrf } from '$src/hooks/csrf';
 import { RoleNames } from '$src/lib/auth/roles-shared';
 import { ROUTES } from '$src/lib/routes';
 
@@ -107,6 +108,10 @@ export const handle: Handle = sequence(
 		}
 		return resolve(event);
 	},
+	// CSRF protection middleware - uses PUBLIC_WEB_UI_URL at runtime
+	// paths in the first array bypass CSRF checks (e.g., public APIs)
+	// origins in the second array are additional trusted origins
+	csrf([], []),
 	// setup redirect middleware - check if first-time setup is completed
 	async ({ event, resolve }) => {
 		// skip during build process
