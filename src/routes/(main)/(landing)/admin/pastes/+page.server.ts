@@ -1,6 +1,6 @@
 import { createChildLogger } from '@/src/lib/server/logger';
 import { error, isRedirect, redirect } from '@sveltejs/kit';
-import { getAllPastesWithPagination } from '$lib/server/pastes';
+import { deletePaste, findPasteBySlug, getAllPastesWithPagination } from '$lib/server/pastes';
 import type { PaginationData } from '$lib/utils/pagination';
 import { isUnauthenticatedUser } from '$src/lib/utils/format';
 import type { PageServerLoad } from './$types';
@@ -84,8 +84,6 @@ export const actions = {
 		}
 
 		logger.debug(`Delete paste action called for pasteId: ${pasteId} by user: ${user.id}`);
-
-		const { findPasteBySlug, deletePaste } = await import('$lib/server/pastes');
 
 		try {
 			// get paste details to verify existence

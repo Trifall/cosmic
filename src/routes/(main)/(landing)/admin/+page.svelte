@@ -29,7 +29,6 @@
 	} from '$lib/components/ui/tooltip';
 	import { formatUptime, getPublicSiteName } from '$src/lib/utils/format';
 	import type { PageData } from './$types';
-	import { triggerBackup } from './backup.remote';
 
 	let { data }: { data: PageData } = $props();
 
@@ -65,28 +64,6 @@
 	// backup state
 	let isBackingUp = $state(false);
 	let isRefreshingStats = $state(false);
-
-	const triggerManualBackup = async () => {
-		if (isBackingUp) return;
-
-		isBackingUp = true;
-		const toastId = toast.loading('Starting database backup...');
-
-		try {
-			await triggerBackup();
-
-			toast.success('Database backup completed successfully!', { id: toastId });
-			// refresh page data to update last backup timestamp
-			await invalidateAll();
-		} catch (error) {
-			console.error('Backup failed:', error);
-			toast.error(`Backup failed: ${error instanceof Error ? error.message : 'Unknown error'}`, {
-				id: toastId,
-			});
-		} finally {
-			isBackingUp = false;
-		}
-	};
 
 	onMount(async () => {
 		if (browser) {
@@ -251,21 +228,49 @@
 							</div>
 						{/if}
 
-						<button
-							onclick={triggerManualBackup}
-							disabled={isBackingUp ||
-								(!data.filesystemBackupEnabled && !data.s3BackupEnabled && !data.r2BackupEnabled)}
-							class="w-64 max-w-sm rounded-lg bg-green-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-green-700 hover:shadow disabled:cursor-not-allowed disabled:opacity-50 dark:bg-green-600 dark:hover:bg-green-700"
+						<form
+							method="POST"
+							action="?/triggerBackup"
+							use:enhance={({ cancel }) => {
+								if (isBackingUp) {
+									cancel();
+									return;
+								}
+								isBackingUp = true;
+								const toastId = toast.loading('Starting database backup...');
+
+								return async ({ result }) => {
+									isBackingUp = false;
+									if (result.type === 'success') {
+										toast.success('Database backup completed successfully!', { id: toastId });
+										await invalidateAll();
+									} else if (result.type === 'failure') {
+										toast.error(`Backup failed: ${result.data?.message || 'Unknown error'}`, {
+											id: toastId,
+										});
+									} else {
+										toast.error('Backup failed: An unexpected error occurred', { id: toastId });
+									}
+								};
+							}}
+							class="flex w-full justify-center"
 						>
-							{#if isBackingUp}
-								<span class="flex items-center justify-center gap-2">
-									<Database class="h-4 w-4 animate-pulse" />
-									Backing up...
-								</span>
-							{:else}
-								Create Backup Now
-							{/if}
-						</button>
+							<button
+								type="submit"
+								disabled={isBackingUp ||
+									(!data.filesystemBackupEnabled && !data.s3BackupEnabled && !data.r2BackupEnabled)}
+								class="w-64 max-w-sm rounded-lg bg-green-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-green-700 hover:shadow disabled:cursor-not-allowed disabled:opacity-50 dark:bg-green-600 dark:hover:bg-green-700"
+							>
+								{#if isBackingUp}
+									<span class="flex items-center justify-center gap-2">
+										<Database class="h-4 w-4 animate-pulse" />
+										Backing up...
+									</span>
+								{:else}
+									Create Backup Now
+								{/if}
+							</button>
+						</form>
 					</div>
 				</div>
 			</div>

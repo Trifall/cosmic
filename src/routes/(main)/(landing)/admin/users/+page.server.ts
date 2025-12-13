@@ -1,8 +1,9 @@
 import type { DBUser } from '$database/schema';
 import { createChildLogger } from '@/src/lib/server/logger';
-import { isRedirect, redirect } from '@sveltejs/kit';
-import { RoleNames } from '$src/lib/auth/roles-shared';
-import { getAllUsersWithPagination } from '$src/lib/server/users';
+import { error, isRedirect, redirect } from '@sveltejs/kit';
+import { PERMISSIONS, RoleNames } from '$src/lib/auth/roles-shared';
+import { requirePermission } from '$src/lib/server/auth';
+import { deleteUser, getAllUsersWithPagination } from '$src/lib/server/users';
 import type { PaginationData } from '$src/lib/utils/pagination';
 import type { PageServerLoad } from './$types';
 
@@ -106,4 +107,42 @@ export const load: PageServerLoad = async ({ parent, url }) => {
 			error: 'An unexpected error occurred',
 		} as LoadData;
 	}
+};
+
+export const actions = {
+	deleteUser: async ({ request, locals }) => {
+		const { user } = locals;
+
+		if (!user) {
+			logger.warn('Unauthorized user deletion attempt: No user in locals');
+			throw error(401, 'Authentication required');
+		}
+
+		logger.debug(`Delete user action called by user: ${user.id}`);
+
+		// check permissions - admin can delete users
+		await requirePermission(user, {
+			user: [PERMISSIONS.user.delete],
+		});
+
+		const formData = await request.formData();
+		const userId = formData.get('userId')?.toString();
+
+		if (!userId) {
+			return { success: false, message: 'User ID is required' };
+		}
+
+		logger.debug(`Processing delete for userId: ${userId}`);
+
+		// delete the user
+		const result = await deleteUser(user, userId);
+
+		if (!result.ok) {
+			logger.error(`Failed to delete user: ${result.error.message}`);
+			return { success: false, message: result.error.message };
+		}
+
+		logger.info(`User deleted successfully: ${userId} by admin user: ${user.id}`);
+		return { success: true };
+	},
 };

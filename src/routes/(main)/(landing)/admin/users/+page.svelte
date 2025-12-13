@@ -3,6 +3,7 @@
 	import type { ColumnDef } from '@tanstack/table-core';
 	import { createRawSnippet } from 'svelte';
 	import { toast } from 'svelte-sonner';
+	import { enhance } from '$app/forms';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import type { Pathname } from '$app/types';
@@ -23,7 +24,6 @@
 	import { formatUserName, getPublicSiteName } from '$src/lib/utils/format';
 	import { Button } from '$components/ui/button';
 	import type { PageProps } from './$types';
-	import { deleteUser as deleteUserCommand } from './admin-users.remote';
 	import DataTableActions from './data-table-actions.svelte';
 
 	let { data }: { data: PageProps['data'] } = $props();
@@ -309,35 +309,36 @@
 		</AlertDialogHeader>
 		<AlertDialogFooter>
 			<AlertDialogCancel>Cancel</AlertDialogCancel>
-			<AlertDialogAction
-				onclick={async () => {
-					if (!userToDelete?.id) return;
 
+			<form
+				method="POST"
+				action="?/deleteUser"
+				use:enhance={async () => {
+					if (!userToDelete?.id) return;
+					const id = userToDelete.id;
 					const toastId = toast.loading('Deleting user...');
 
-					try {
-						// handle optimistic UI update before deletion
-						if (tableRef) {
-							await tableRef.handleOptimisticDeletion(userToDelete.id);
-						}
-
-						// call remote function to delete user
-						await deleteUserCommand({ userId: userToDelete.id });
-
-						isDeleteDialogOpen = false;
-						toast.dismiss(toastId);
-						toast.success('User deleted successfully');
-
-						// revalidate to update pagination and counts
-						await invalidateAll();
-					} catch (error) {
-						toast.dismiss(toastId);
-						toast.error(`Failed to delete user: ${error}`);
+					// Optimistic UI update
+					if (tableRef) {
+						await tableRef.handleOptimisticDeletion(id);
 					}
+					isDeleteDialogOpen = false;
+
+					return async ({ result }) => {
+						toast.dismiss(toastId);
+						if (result.type === 'success') {
+							toast.success('User deleted successfully');
+							await invalidateAll();
+						} else {
+							toast.error('Failed to delete user');
+							await invalidateAll();
+						}
+					};
 				}}
 			>
-				Delete
-			</AlertDialogAction>
+				<input type="hidden" name="userId" value={userToDelete?.id} />
+				<AlertDialogAction type="submit">Delete</AlertDialogAction>
+			</form>
 		</AlertDialogFooter>
 	</AlertDialogContent>
 </AlertDialog>

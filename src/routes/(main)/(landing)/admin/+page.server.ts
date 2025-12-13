@@ -1,4 +1,5 @@
 import { createChildLogger } from '@/src/lib/server/logger';
+import { error } from '@sveltejs/kit';
 import {
 	type PasteStatistics,
 	clearStatsCache,
@@ -8,6 +9,7 @@ import {
 	getUserStats,
 } from '$lib/server/stats';
 import { getServerUptime } from '$lib/server/system';
+import { triggerManualBackup } from '$src/lib/server/backups/backup-handler';
 import { getSetting } from '$src/lib/server/settings';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -147,5 +149,34 @@ export const actions: Actions = {
 		logger.debug('Clearing stats cache via form action');
 		clearStatsCache();
 		return { success: true };
+	},
+
+	triggerBackup: async ({ locals }) => {
+		// ensure user is authenticated and is an admin
+		if (!locals.user || locals.user.role !== 'admin') {
+			throw error(403, 'Unauthorized - Admin access required');
+		}
+
+		logger.debug(`Manual backup triggered by admin: ${locals.user.id}`);
+
+		try {
+			const result = await triggerManualBackup();
+
+			if (!result.success) {
+				throw error(500, result.message || 'Backup failed');
+			}
+
+			return {
+				success: true,
+				message: result.message,
+			};
+		} catch (err) {
+			logger.error(`Manual backup failed: ${err}`);
+			// If it's already an HttpError (thrown by error()), rethrow it
+			if (err && typeof err === 'object' && 'status' in err) {
+				throw err;
+			}
+			throw error(500, err instanceof Error ? err.message : 'Unknown error occurred during backup');
+		}
 	},
 };
