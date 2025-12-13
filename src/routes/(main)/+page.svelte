@@ -285,9 +285,15 @@
 						{/each}
 					</SelectContent>
 				</Select>
+				{#if errors.visibility && errors.visibility.length > 0}
+					<p class="mt-2 text-sm text-red-400">{errors.visibility[0]}</p>
+				{/if}
 
 				{#if visibility === 'INVITE_ONLY'}
 					<UserInviteSelector {visibility} bind:selectedUsers />
+					{#if errors.invitedUsers && errors.invitedUsers.length > 0}
+						<p class="mt-2 text-sm text-red-400">{errors.invitedUsers[0]}</p>
+					{/if}
 				{/if}
 			</div>
 
