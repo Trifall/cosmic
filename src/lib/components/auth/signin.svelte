@@ -190,7 +190,6 @@
 							<p class="text-sm text-red-500">{errors.password}</p>
 						{/if}
 					</div>
-					<a href="##" class="ml-auto inline-block text-sm underline">Forgot your password?</a>
 					<Button type="submit" class="w-full" disabled={isLoading}>Login</Button>
 					{#if errors.form}
 						<p class="mt-2 text-center text-sm text-red-500">{errors.form}</p>
