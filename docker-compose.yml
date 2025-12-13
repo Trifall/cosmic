@@ -86,7 +86,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    command: sh -c "bun run db:deploy && ORIGIN=$${ORIGIN:-$$PUBLIC_WEB_UI_URL} bun run start"
+    command: sh -c "bun run db:deploy && bun run start"
     restart: unless-stopped
     # you can use a .env file to set environment variables if you want
     env_file:
