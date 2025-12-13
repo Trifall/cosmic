@@ -76,10 +76,17 @@ services:
       #DB_PORT: 5432
       #DB_USER: postgres
       #DB_NAME: cosmic
+
+      # --- SvelteKit ---
+
+      # Trust Proxy Headers (Cloudflare/Reverse Proxy)
+      # Ensures the server knows it is being accessed via HTTPS
+      PROTOCOL_HEADER: X-Forwarded-Proto
+      HOST_HEADER: X-Forwarded-Host
     depends_on:
       db:
         condition: service_healthy
-    command: sh -c "bun run db:deploy && bun run start"
+    command: sh -c "bun run db:deploy && ORIGIN=$${ORIGIN:-$$PUBLIC_WEB_UI_URL} bun run start"
     restart: unless-stopped
     # you can use a .env file to set environment variables if you want
     env_file:

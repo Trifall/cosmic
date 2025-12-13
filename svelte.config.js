@@ -20,8 +20,9 @@ const config = {
 			'@': './',
 		},
 		csrf: {
-			// disable built-in CSRF check - we handle it at runtime in src/hooks/csrf.ts
-			trustedOrigins: ['*'],
+			// when behind a reverse proxy (Cloudflare + Caddy), trust the public URL origin
+			// PUBLIC_WEB_UI_URL is the public-facing URL configured in Docker
+			trustedOrigins: [process.env.PUBLIC_WEB_UI_URL].filter(Boolean),
 		},
 		experimental: {
 			remoteFunctions: true,

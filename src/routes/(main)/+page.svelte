@@ -334,7 +334,10 @@
 						placeholder="my-custom-url"
 						class="border-border bg-background text-sm"
 						disabled={isSubmitting}
-						autocomplete="off"
+						autocomplete="one-time-code"
+						data-1p-ignore
+						data-lpignore="true"
+						data-form-type="other"
 					/>
 					{#if errors.customSlug && errors.customSlug.length > 0}
 						<p class="text-sm text-red-400">{errors.customSlug[0]}</p>
@@ -351,8 +354,10 @@
 						type="password"
 						class="border-border bg-background text-sm"
 						disabled={isSubmitting}
-						autocomplete="off"
-						maxlength={100}
+						autocomplete="new-password"
+						data-1p-ignore
+						data-lpignore="true"
+						data-form-type="other"
 					/>
 				</div>
 
