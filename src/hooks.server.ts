@@ -107,19 +107,6 @@ export const handle: Handle = sequence(
 			event.url.protocol = 'https:';
 		}
 
-		// DEBUG LOGGING FOR CSRF/ORIGIN ISSUES
-		const logger = createChildLogger('RequestDebug');
-		logger.info('=== Request Debug Info ===');
-		logger.info(`Request URL: ${event.url.href}`);
-		logger.info(`Origin header: ${event.request.headers.get('origin')}`);
-		logger.info(`Host header: ${event.request.headers.get('host')}`);
-		logger.info(`Referer header: ${event.request.headers.get('referer')}`);
-		logger.info(`Environment ORIGIN: ${process.env.ORIGIN}`);
-		logger.info(`Environment PUBLIC_WEB_UI_URL: ${process.env.PUBLIC_WEB_UI_URL}`);
-		logger.info(`X-Forwarded-Proto: ${event.request.headers.get('x-forwarded-proto')}`);
-		logger.info(`X-Forwarded-Host: ${event.request.headers.get('x-forwarded-host')}`);
-		logger.info('================================');
-
 		return resolve(event);
 	},
 	// CSRF protection middleware - uses PUBLIC_WEB_UI_URL at runtime
