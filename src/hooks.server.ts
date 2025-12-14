@@ -65,38 +65,38 @@ if (!building) {
 	 * sequential service initialization
 	 * database -> settings -> rate limiting -> backups -> paste cleanup
 	 */
-	(async () => {
-		try {
-			logger.info('Step 1: Setting up database...');
-			await setupDatabase();
-			logger.info('Database setup completed');
+	try {
+		const startTime = Date.now();
+		logger.info('Step 1: Setting up database...');
+		await setupDatabase();
+		logger.info('Database setup completed');
 
-			logger.info('Step 2: Initializing settings service...');
-			const { settingsService } = await import('$lib/server/settings');
-			await settingsService.get('firstTimeSetupCompleted'); // This triggers initialization
-			logger.info('Settings service initialized');
+		logger.info('Step 2: Initializing settings service...');
+		const { settingsService } = await import('$lib/server/settings');
+		await settingsService.get('firstTimeSetupCompleted'); // This triggers initialization
+		logger.info('Settings service initialized');
 
-			logger.info('Step 3: Initializing rate limiting service...');
-			await rateLimitService.initialize();
-			logger.info('Rate limiting service initialized');
+		logger.info('Step 3: Initializing rate limiting service...');
+		await rateLimitService.initialize();
+		logger.info('Rate limiting service initialized');
 
-			logger.info('Step 4: Starting backup scheduler...');
-			const backupScheduler = BackupScheduler.getInstance();
-			await backupScheduler.start();
-			logger.info('Backup scheduler started');
+		logger.info('Step 4: Starting backup scheduler...');
+		const backupScheduler = BackupScheduler.getInstance();
+		await backupScheduler.start();
+		logger.info('Backup scheduler started');
 
-			logger.info('Step 5: Starting paste cleanup scheduler...');
-			const cleanupScheduler = PasteCleanupScheduler.getInstance();
-			await cleanupScheduler.start();
-			logger.info('Paste cleanup scheduler started successfully, running initial cleanup...');
-			await cleanupScheduler.triggerCleanup();
+		logger.info('Step 5: Starting paste cleanup scheduler...');
+		const cleanupScheduler = PasteCleanupScheduler.getInstance();
+		await cleanupScheduler.start();
+		logger.info('Paste cleanup scheduler started successfully, running initial cleanup...');
+		await cleanupScheduler.triggerCleanup();
 
-			logger.info('All services initialized successfully');
-		} catch (error) {
-			logger.error(`Fatal: Failed to initialize services: ${error}`);
-			process.exit(1);
-		}
-	})();
+		logger.info('All services initialized successfully');
+		logger.info(`Total initialization time: ${Date.now() - startTime}ms`);
+	} catch (error) {
+		logger.error(`Fatal: Failed to initialize services: ${error}`);
+		process.exit(1);
+	}
 }
 
 export const handle: Handle = sequence(
