@@ -173,11 +173,19 @@
 	};
 
 	const title = $derived(data.paste?.title || data.paste?.customSlug || data.paste?.id || 'Paste');
-	const description = $derived(
-		data.paste
-			? data.paste.content.slice(0, 150) + (data.paste.content.length > 150 ? '...' : '')
-			: ''
-	);
+	const description = $derived.by(() => {
+		if (!data.paste) return '';
+
+		const author = data.paste.ownerUsername ? `@${data.paste.ownerUsername}` : 'Guest';
+		const lang = getLanguageDisplayName(data.paste.language || 'plaintext');
+		const lines = data.paste.content.split('\n').length;
+		const date = new Date(data.paste.createdAt).toLocaleString(undefined, {
+			dateStyle: 'medium',
+			timeStyle: 'short',
+		});
+
+		return `By ${author} - ${lang} - ${lines} lines - ${date}`;
+	});
 </script>
 
 <svelte:head>
