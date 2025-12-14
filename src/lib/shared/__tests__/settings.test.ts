@@ -349,7 +349,9 @@ describe('settings.ts', () => {
 
 		it('should match SETTINGS_CONFIG keys', () => {
 			const configKeys = Object.keys(SETTINGS_CONFIG);
-			expect([...SETTING_NAMES].sort()).toEqual(configKeys.sort());
+			expect([...SETTING_NAMES].sort((a, b) => a.localeCompare(b))).toEqual(
+				configKeys.sort((a, b) => a.localeCompare(b))
+			);
 		});
 	});
 

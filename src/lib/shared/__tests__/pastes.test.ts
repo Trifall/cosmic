@@ -666,7 +666,9 @@ describe('pastes.ts', () => {
 
 			// visibility options should match VISIBILITY_VALUES
 			const optionValues = visibilityOptions.map((o) => o.value);
-			expect(optionValues.sort()).toEqual([...VISIBILITY_VALUES].sort());
+			expect(optionValues.sort((a, b) => a.localeCompare(b))).toEqual(
+				[...VISIBILITY_VALUES].sort((a, b) => a.localeCompare(b))
+			);
 		});
 	});
 });
