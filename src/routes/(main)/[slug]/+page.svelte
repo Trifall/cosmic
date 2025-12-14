@@ -179,9 +179,10 @@
 		const author = data.paste.ownerUsername ? `@${data.paste.ownerUsername}` : 'Guest';
 		const lang = getLanguageDisplayName(data.paste.language || 'plaintext');
 		const lines = data.paste.content.split('\n').length;
-		const date = new Date(data.paste.createdAt).toLocaleString(undefined, {
+		const date = new Date(data.paste.createdAt).toLocaleString('en-US', {
 			dateStyle: 'medium',
 			timeStyle: 'short',
+			timeZone: 'America/New_York',
 		});
 
 		return `By ${author} - ${lang} - ${lines} lines - ${date}`;
