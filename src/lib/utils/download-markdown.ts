@@ -57,7 +57,7 @@ ${sanitized}
 		}, 100);
 	} catch (error) {
 		console.error(`Failed to download markdown: ${error}`);
-		import('svelte-sonner').then(({ toast }) => {
+		await import('svelte-sonner').then(({ toast }) => {
 			toast.error('Failed to download markdown');
 		});
 	}
