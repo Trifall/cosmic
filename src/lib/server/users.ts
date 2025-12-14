@@ -9,7 +9,7 @@ import type { PaginationData } from '$lib/utils/pagination';
 import type { Result } from '$lib/utils/result';
 import { err, ok } from '$lib/utils/result';
 import { emptyToNull, getChangedFields } from '$lib/utils/update-helpers';
-import { PERMISSIONS, type RoleName } from '$src/lib/auth/roles-shared';
+import { type AuthedRoleName, PERMISSIONS } from '$src/lib/auth/roles-shared';
 import { isDBUser } from '$src/lib/utils/format';
 
 const logger = createChildLogger('server/users');
@@ -247,7 +247,7 @@ export const createUser = async (
 				email: data.email,
 				password: data.password,
 				name: data.username,
-				role: data.role as RoleName,
+				role: data.role as AuthedRoleName,
 				data: {
 					username: data.username,
 					displayUsername: data.username,
