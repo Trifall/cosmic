@@ -2,6 +2,7 @@
 	import { ModeWatcher, mode } from 'mode-watcher';
 	import type { Snippet } from 'svelte';
 	import { Toaster } from 'svelte-sonner';
+	import { page } from '$app/stores';
 	import '$src/app.css';
 	import { getPublicSiteName } from '$src/lib/utils/format';
 
@@ -12,6 +13,26 @@
 
 <svelte:head>
 	<title>{getPublicSiteName()}</title>
+	<meta name="description" content="A self-hostable pastebin and file sharing service" />
+
+	<!-- Open Graph / Facebook -->
+	<meta property="og:type" content="website" />
+	<meta property="og:url" content={$page.url.href} />
+	<meta property="og:title" content={getPublicSiteName()} />
+	<meta property="og:description" content="A self-hostable pastebin and file sharing service" />
+	<meta property="og:image" content="{$page.url.origin}/og_image.png" />
+
+	<!-- Twitter -->
+	<meta property="twitter:card" content="summary_large_image" />
+	<meta property="twitter:url" content={$page.url.href} />
+	<meta property="twitter:title" content={getPublicSiteName()} />
+	<meta
+		property="twitter:description"
+		content="A self-hostable pastebin and file sharing service"
+	/>
+	<meta property="twitter:image" content="{$page.url.origin}/og_image.png" />
+
+	<meta name="theme-color" content="#ff5f1f" />
 	<meta name="darkreader-lock" />
 </svelte:head>
 
