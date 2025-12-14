@@ -30,6 +30,7 @@
 	} from '@lucide/svelte';
 	import { ScrollState } from 'runed';
 	import { toast } from 'svelte-sonner';
+	import { page } from '$app/state';
 	import CodeHighlighter from '$lib/components/CodeHighlighter.svelte';
 	import MarkdownViewer from '$lib/components/MarkdownViewer.svelte';
 	import { Button } from '$lib/components/ui/button';
@@ -170,12 +171,29 @@
 			toast.error('Failed to download paste');
 		}
 	};
+
+	const title = $derived(data.paste?.title || data.paste?.customSlug || data.paste?.id || 'Paste');
+	const description = $derived(
+		data.paste
+			? data.paste.content.slice(0, 150) + (data.paste.content.length > 150 ? '...' : '')
+			: ''
+	);
 </script>
 
 <svelte:head>
-	<title
-		>{data.paste?.title || data.paste?.customSlug || data.paste?.id || 'Paste'} - {getPublicSiteName()}</title
-	>
+	<title>{title} - {getPublicSiteName()}</title>
+
+	{#if data.paste}
+		<!-- Open Graph / Facebook -->
+		<meta property="og:type" content="article" />
+		<meta property="og:url" content={page.url.href} />
+		<meta property="og:title" content="{getPublicSiteName()} - {title}" />
+		<meta property="og:description" content={description} />
+
+		<!-- Twitter -->
+		<meta property="twitter:title" content="{getPublicSiteName()} - {title}" />
+		<meta property="twitter:description" content={description} />
+	{/if}
 </svelte:head>
 
 <!-- Password Card -->

@@ -113,6 +113,55 @@ export const getPaste = query(GetPasteSchema, async ({ slug }) => {
 	// burn-after-reading: allow same-session navigation (versions) without burning;
 	// delete for subsequent users (no session cookie) if already viewed before
 	if (paste.burnAfterReading && user?.id !== paste.owner_id) {
+		const userAgent = request.headers.get('user-agent')?.toLowerCase() || '';
+		// check for common bot user agents that might be trying to generate a preview
+		const isBot =
+			userAgent.includes('facebookexternalhit') ||
+			userAgent.includes('twitterbot') ||
+			userAgent.includes('discordbot') ||
+			userAgent.includes('whatsapp') ||
+			userAgent.includes('telegrambot') ||
+			userAgent.includes('slackbot');
+
+		if (isBot) {
+			logger.info(
+				`Bot detected (${userAgent}) - preserving BAR paste ${paste.id} and hiding content`
+			);
+			// return the paste but with hidden content so it doesn't get burned or leaked in preview
+			const safePaste = { ...paste, content: 'Burn After Reading - Click to view' };
+			const pasteData = {
+				paste: {
+					id: safePaste.id,
+					customSlug: safePaste.customSlug,
+					content: safePaste.content,
+					owner_id: safePaste.owner_id,
+					ownerUsername: safePaste.ownerUsername,
+					visibility: safePaste.visibility,
+					language: safePaste.language || 'plaintext',
+					title: safePaste.title,
+					views: safePaste.views,
+					uniqueViews: safePaste.uniqueViews,
+					createdAt: safePaste.createdAt,
+					updatedAt: safePaste.updatedAt,
+					lastViewedAt: safePaste.lastViewedAt,
+					currentVersion: safePaste.currentVersion,
+					burnAfterReading: safePaste.burnAfterReading,
+					expiresAt: safePaste.expiresAt,
+					hasPassword: safePaste.passwordHash ? safePaste.passwordHash.length > 0 : false,
+					versioningEnabled: safePaste.versioningEnabled,
+					versionHistoryVisible: safePaste.versionHistoryVisible,
+				},
+				canEdit: false,
+				canDelete: false,
+				isOwner: false,
+				invitedUsers: [],
+				versions: [],
+				canViewVersions: false,
+				selectedVersion: null,
+			};
+			return pasteData;
+		}
+
 		const cookieName = `pv_${paste.id}`;
 		const hasCookie = cookies.get(cookieName) === '1';
 
