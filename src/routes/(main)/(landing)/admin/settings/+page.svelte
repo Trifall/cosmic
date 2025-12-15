@@ -90,7 +90,7 @@
 </script>
 
 <svelte:head>
-	<title>Admin - Settings - {getPublicSiteName()}</title>
+	<title>Admin - Settings | {getPublicSiteName()}</title>
 </svelte:head>
 
 <TooltipProvider delayDuration={0}>

@@ -12,7 +12,7 @@
 </script>
 
 <svelte:head>
-	<title>User Profile: {formatUserName(user)} - Admin - {getPublicSiteName()}</title>
+	<title>User Profile: {formatUserName(user)} - Admin | {getPublicSiteName()}</title>
 </svelte:head>
 
 <div class="container mx-auto px-4">

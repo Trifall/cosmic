@@ -58,7 +58,7 @@
 </script>
 
 <svelte:head>
-	<title>Add New User - Admin - {getPublicSiteName()}</title>
+	<title>Add New User - Admin | {getPublicSiteName()}</title>
 </svelte:head>
 
 <svelte:window

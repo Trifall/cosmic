@@ -197,7 +197,7 @@
 </script>
 
 <svelte:head>
-	<title>Dashboard - {getPublicSiteName()}</title>
+	<title>Dashboard | {getPublicSiteName()}</title>
 </svelte:head>
 
 <div class="container mx-auto px-4">

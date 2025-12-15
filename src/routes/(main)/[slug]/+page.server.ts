@@ -7,16 +7,19 @@ import {
 	validatePastePassword,
 } from '@/src/lib/server/pastes';
 import { fail, redirect } from '@sveltejs/kit';
+import { definePageMetaTags } from 'svelte-meta-tags';
 import { createChildLogger } from '$lib/server/logger';
 import { type InvitedUser } from '$lib/shared/pastes';
 import { formatPasteStatusError, isUnauthenticatedUser } from '$lib/utils/format';
 import { getSetting } from '$src/lib/server/settings';
+import { getLanguageDisplayName } from '$src/lib/shared/languages';
+import { getPublicSiteName } from '$src/lib/utils/format';
 import { getPaste } from '$src/routes/(main)/[slug]/slug.remote';
 import type { Actions, PageServerLoad } from './$types';
 
 const logger = createChildLogger('PasteSlugPage');
 
-export const load: PageServerLoad = async ({ parent, params }) => {
+export const load: PageServerLoad = async ({ parent, params, url }) => {
 	const { user } = await parent();
 	try {
 		const pasteData = await getPaste({
@@ -28,7 +31,40 @@ export const load: PageServerLoad = async ({ parent, params }) => {
 
 		const canCreatePastes = unauthPasteCreationEnabled || !isUnauthenticatedUser(user);
 
-		const resData = { ...pasteData, canCreatePastes };
+		// Generate page-specific meta tags if paste exists
+		let pageTags = {};
+		if (pasteData.paste) {
+			const title =
+				pasteData.paste?.title || pasteData.paste?.customSlug || pasteData.paste?.id || 'Paste';
+			const author = pasteData.paste.ownerUsername ? `@${pasteData.paste.ownerUsername}` : 'Guest';
+			const lang = getLanguageDisplayName(pasteData.paste.language || 'plaintext');
+			const lines = pasteData.paste.content.split('\n').length;
+			const date = new Date(pasteData.paste.createdAt).toLocaleString('en-US', {
+				dateStyle: 'medium',
+				timeStyle: 'short',
+				timeZone: 'America/New_York',
+			});
+
+			const description = `By ${author} - ${lang} - ${lines} lines - ${date}`;
+
+			pageTags = definePageMetaTags({
+				title: title,
+				description: description,
+				canonical: url.href,
+				openGraph: {
+					type: 'article',
+					url: url.href,
+					title: `${getPublicSiteName()} - ${title}`,
+					description: description,
+				},
+				twitter: {
+					title: `${getPublicSiteName()} - ${title}`,
+					description: description,
+				},
+			});
+		}
+
+		const resData = { ...pasteData, canCreatePastes, ...pageTags };
 
 		return resData;
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any

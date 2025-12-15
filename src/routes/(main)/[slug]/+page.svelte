@@ -3,11 +3,7 @@
 	import LanguageSelector from '@/src/lib/components/side-panel/language-selector.svelte';
 	import SideBar from '@/src/lib/components/side-panel/side-bar.svelte';
 	import { getFileExtension, getLanguageDisplayName } from '@/src/lib/shared/languages';
-	import {
-		formatDateRelativeToNow,
-		getPublicSiteName,
-		sanitizeFilename,
-	} from '@/src/lib/utils/format';
+	import { formatDateRelativeToNow, sanitizeFilename } from '@/src/lib/utils/format';
 	import {
 		ArrowUp,
 		BookOpen,
@@ -30,7 +26,6 @@
 	} from '@lucide/svelte';
 	import { ScrollState } from 'runed';
 	import { toast } from 'svelte-sonner';
-	import { page } from '$app/state';
 	import CodeHighlighter from '$lib/components/CodeHighlighter.svelte';
 	import MarkdownViewer from '$lib/components/MarkdownViewer.svelte';
 	import { Button } from '$lib/components/ui/button';
@@ -171,39 +166,7 @@
 			toast.error('Failed to download paste');
 		}
 	};
-
-	const title = $derived(data.paste?.title || data.paste?.customSlug || data.paste?.id || 'Paste');
-	const description = $derived.by(() => {
-		if (!data.paste) return '';
-
-		const author = data.paste.ownerUsername ? `@${data.paste.ownerUsername}` : 'Guest';
-		const lang = getLanguageDisplayName(data.paste.language || 'plaintext');
-		const lines = data.paste.content.split('\n').length;
-		const date = new Date(data.paste.createdAt).toLocaleString('en-US', {
-			dateStyle: 'medium',
-			timeStyle: 'short',
-			timeZone: 'America/New_York',
-		});
-
-		return `By ${author} - ${lang} - ${lines} lines - ${date}`;
-	});
 </script>
-
-<svelte:head>
-	<title>{title} - {getPublicSiteName()}</title>
-
-	{#if data.paste}
-		<!-- Open Graph / Facebook -->
-		<meta property="og:type" content="article" />
-		<meta property="og:url" content={page.url.href} />
-		<meta property="og:title" content="{getPublicSiteName()} - {title}" />
-		<meta property="og:description" content={description} />
-
-		<!-- Twitter -->
-		<meta property="twitter:title" content="{getPublicSiteName()} - {title}" />
-		<meta property="twitter:description" content={description} />
-	{/if}
-</svelte:head>
 
 <!-- Password Card -->
 {#if data.passwordRequired && !data.paste}

@@ -203,7 +203,7 @@
 </script>
 
 <svelte:head>
-	<title>Admin - Users - {getPublicSiteName()}</title>
+	<title>Admin - Users | {getPublicSiteName()}</title>
 </svelte:head>
 
 <div class="container mx-auto px-4">

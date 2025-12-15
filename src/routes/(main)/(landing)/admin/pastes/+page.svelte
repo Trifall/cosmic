@@ -231,7 +231,7 @@
 </script>
 
 <svelte:head>
-	<title>Admin - Pastes - {getPublicSiteName()}</title>
+	<title>Admin - Pastes | {getPublicSiteName()}</title>
 </svelte:head>
 
 <div class="container mx-auto px-4">

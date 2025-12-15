@@ -1,34 +1,21 @@
 <script lang="ts">
 	import { ModeWatcher, mode } from 'mode-watcher';
 	import type { Snippet } from 'svelte';
+	import { MetaTags, deepMerge } from 'svelte-meta-tags';
 	import { Toaster } from 'svelte-sonner';
 	import { page } from '$app/state';
 	import '$src/app.css';
-	import { getPublicSiteName } from '$src/lib/utils/format';
+	import type { LayoutData } from './$types';
 
-	let { children }: { children: Snippet } = $props();
+	let { children, data }: { children: Snippet; data: LayoutData } = $props();
+
+	let metaTags = $derived(deepMerge(data.baseMetaTags, page.data.pageMetaTags));
 </script>
 
 <ModeWatcher />
 
 <svelte:head>
-	<title>{getPublicSiteName()}</title>
-	<meta name="description" content="A self-hostable, pastebin-like service" />
-
-	<!-- Open Graph / Facebook -->
-	<meta property="og:type" content="website" />
-	<meta property="og:url" content={page.url.href} />
-	<meta property="og:title" content={getPublicSiteName()} />
-	<meta property="og:description" content="A self-hostable pastebin-like service" />
-	<meta property="og:image" content="{page.url.origin}/og_image.png" />
-
-	<!-- Twitter -->
-	<meta property="twitter:card" content="summary_large_image" />
-	<meta property="twitter:url" content={page.url.href} />
-	<meta property="twitter:title" content={getPublicSiteName()} />
-	<meta property="twitter:description" content="A self-hostable pastebin-like service" />
-	<meta property="twitter:image" content="{page.url.origin}/og_image.png" />
-
+	<MetaTags {...metaTags} />
 	<meta name="theme-color" content="#ff5f1f" />
 	<meta name="darkreader-lock" />
 </svelte:head>

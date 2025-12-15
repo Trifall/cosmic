@@ -10,7 +10,7 @@
 </script>
 
 <svelte:head>
-	<title>Your Profile - {getPublicSiteName()}</title>
+	<title>Your Profile | {getPublicSiteName()}</title>
 </svelte:head>
 
 <div class="container mx-auto px-4">

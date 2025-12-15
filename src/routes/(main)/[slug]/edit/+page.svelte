@@ -122,7 +122,7 @@
 
 <svelte:head>
 	<title
-		>Edit: {data.paste.title || `Paste ${data.paste.customSlug || data.paste.id}`} - {getPublicSiteName()}</title
+		>Edit: {data.paste.title || `Paste ${data.paste.customSlug || data.paste.id}`} | {getPublicSiteName()}</title
 	>
 </svelte:head>
 

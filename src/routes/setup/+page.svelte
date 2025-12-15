@@ -86,7 +86,7 @@
 </script>
 
 <svelte:head>
-	<title>First-Time Setup - {getPublicSiteName()}</title>
+	<title>First-Time Setup | {getPublicSiteName()}</title>
 </svelte:head>
 
 <div class="absolute inset-0 -z-10 flex items-center justify-center">

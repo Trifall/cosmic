@@ -7,7 +7,7 @@
 </script>
 
 <svelte:head>
-	<title>Sign Up - {getPublicSiteName()}</title>
+	<title>Sign Up | {getPublicSiteName()}</title>
 </svelte:head>
 
 <div class="flex min-h-screen items-center justify-center">
