@@ -45,7 +45,7 @@ export const load: PageServerLoad = async ({ parent, params, url }) => {
 				timeZone: 'America/New_York',
 			});
 
-			const description = `By ${author} - ${lang} - ${lines} lines - ${date}`;
+			const description = `By ${author} - ${lang} - ${lines} lines - ${date} EST`;
 
 			pageTags = definePageMetaTags({
 				title: title,
