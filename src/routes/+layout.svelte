@@ -14,8 +14,9 @@
 
 <ModeWatcher />
 
+<MetaTags {...metaTags} />
+
 <svelte:head>
-	<MetaTags {...metaTags} />
 	<meta name="theme-color" content="#ff5f1f" />
 	<meta name="darkreader-lock" />
 </svelte:head>
