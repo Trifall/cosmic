@@ -3,20 +3,21 @@ import { getPublicSiteName } from '$src/lib/utils/format';
 import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = ({ url }) => {
+	const siteName = getPublicSiteName();
 	const baseTags = defineBaseMetaTags({
-		title: getPublicSiteName(),
-		titleTemplate: '%s | ' + getPublicSiteName(),
+		title: siteName,
+		titleTemplate: '%s | ' + siteName,
 		description: 'A self-hostable, pastebin-like service',
 		canonical: new URL(url.pathname, url.origin).href,
 		openGraph: {
 			type: 'website',
 			url: new URL(url.pathname, url.origin).href,
-			title: getPublicSiteName(),
+			title: siteName,
 			description: 'A self-hostable, pastebin-like service',
 			images: [
 				{
 					url: new URL('/og_image.png', url.origin).href,
-					alt: 'Open Graph image for ' + getPublicSiteName(),
+					alt: 'Open Graph image for ' + siteName,
 					width: 1200,
 					height: 630,
 					secureUrl: new URL('/og_image.png', url.origin).href,
@@ -26,10 +27,10 @@ export const load: LayoutServerLoad = ({ url }) => {
 		},
 		twitter: {
 			cardType: 'summary_large_image',
-			title: getPublicSiteName(),
+			title: siteName,
 			description: 'A self-hostable, pastebin-like service',
 			image: new URL('/og_image.png', url.origin).href,
-			imageAlt: 'Twitter image for ' + getPublicSiteName(),
+			imageAlt: 'Twitter image for ' + siteName,
 		},
 	});
 
