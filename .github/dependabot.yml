@@ -20,14 +20,11 @@ updates:
     # Ignore specific dependencies that shouldn't be auto-updated
     ignore:
       - dependency-name: 'bits-ui'
-      - dependency-name: 'svelte-adapter-bun'
       - dependency-name: 'tailwind-variants'
       - dependency-name: 'tailwindcss'
       - dependency-name: 'vaul-svelte'
     labels:
       - 'dependencies'
-    reviewers:
-      - 'Trifall'
     commit-message:
       prefix: 'chore'
       include: 'scope'

@@ -1,5 +1,5 @@
+import adapter from '@sveltejs/adapter-node';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
-import adapter from 'svelte-adapter-bun';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
@@ -20,8 +20,7 @@ const config = {
 			'@': './',
 		},
 		csrf: {
-			// disable built-in CSRF check - we handle it at runtime in src/hooks/csrf.ts
-			checkOrigin: false,
+			trustedOrigins: [process.env.PUBLIC_WEB_UI_URL].filter(Boolean),
 		},
 		experimental: {
 			remoteFunctions: true,
