@@ -49,6 +49,7 @@
 
 		try {
 			let newErrors = false;
+
 			await authClient.signIn.username(
 				{ username, password },
 				{

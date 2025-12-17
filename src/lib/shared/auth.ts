@@ -101,4 +101,5 @@ export const ERROR_MESSAGES = {
 	USERNAME_NOT_FOUND: 'User not found',
 	BANNED_USER: 'Your account has been banned',
 	USERNAME_NOT_ALLOWED: 'Username is already taken',
+	USERNAME_NOT_AVAILABLE: 'Username is not available',
 };

@@ -69,6 +69,22 @@
 		let signupSuccess = false;
 
 		try {
+			const { data: response, error } = await authClient.isUsernameAvailable({
+				username: username,
+			});
+
+			if (error) {
+				console.error(error);
+				errors.form = ERROR_MESSAGES.UNKNOWN;
+				return;
+			}
+
+			if (!response || response.available === false) {
+				console.error('Username is not available');
+				errors.username = ERROR_MESSAGES.USERNAME_NOT_AVAILABLE;
+				return;
+			}
+
 			await authClient.signUp.email(
 				{
 					email,
@@ -111,8 +127,13 @@
 			}
 		} catch (error) {
 			console.error(error);
+			console.log('a');
 			if (!errors.email && !errors.username) {
 				errors.form = ERROR_MESSAGES.UNKNOWN;
+			} else if (errors.email) {
+				errors.form = ERROR_MESSAGES.EMAIL_EXISTS;
+			} else if (errors.username) {
+				errors.form = ERROR_MESSAGES.USERNAME_EXISTS;
 			}
 		}
 		isLoading = false;

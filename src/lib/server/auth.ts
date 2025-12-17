@@ -119,12 +119,7 @@ const options = {
 					return false;
 				}
 
-				// check if username exists in database
-				const userRes = await db.query.user.findFirst({
-					where: eq(userTable.username, username),
-				});
-
-				return isValid && !userRes;
+				return isValid;
 			},
 		}),
 		adminPlugin({
