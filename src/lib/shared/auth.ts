@@ -94,12 +94,12 @@ export type SignUpInput = z.infer<typeof signUpSchema>;
 
 export const ERROR_MESSAGES = {
 	EMAIL_EXISTS: 'An account with this email already exists',
-	USERNAME_EXISTS: 'An account with this username already exists',
-	INVALID_PASSWORD: 'Invalid login credentials',
-	UNKNOWN: 'An unknown error occurred. Please try again.',
 	INVALID_EMAIL: 'Please enter a valid email address',
-	USERNAME_NOT_FOUND: 'User not found',
+	INVALID_PASSWORD: 'Invalid login credentials',
 	BANNED_USER: 'Your account has been banned',
+	USERNAME_EXISTS: 'An account with this username already exists',
+	USERNAME_NOT_FOUND: 'User not found',
 	USERNAME_NOT_ALLOWED: 'Username is already taken',
 	USERNAME_NOT_AVAILABLE: 'Username is not available',
+	UNKNOWN: 'An unknown error occurred. Please try again.',
 };
