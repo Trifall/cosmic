@@ -99,14 +99,33 @@ if (!building) {
 }
 
 export const handle: Handle = sequence(
-	// protocol fix and debug logging for reverse proxy
+	// security headers and protocol fix
 	async ({ event, resolve }) => {
 		const proto = event.request.headers.get('x-forwarded-proto');
 		if (proto === 'https') {
 			event.url.protocol = 'https:';
 		}
 
-		return resolve(event);
+		const response = await resolve(event);
+
+		// set security headers to mitigate XSS and other attacks
+		response.headers.set(
+			'Content-Security-Policy',
+			"default-src 'self'; " +
+				"script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
+				"style-src 'self' 'unsafe-inline'; " +
+				"img-src 'self' data: https:; " +
+				"font-src 'self'; " +
+				"connect-src 'self'; " +
+				"frame-ancestors 'none'; " +
+				"base-uri 'self'; " +
+				"form-action 'self';"
+		);
+		response.headers.set('X-Content-Type-Options', 'nosniff');
+		response.headers.set('X-Frame-Options', 'DENY');
+		response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+
+		return response;
 	},
 	// setup redirect middleware - check if first-time setup is completed
 	async ({ event, resolve }) => {
