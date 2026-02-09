@@ -331,51 +331,92 @@ export const actions: Actions = {
 		}
 
 		try {
-			// generate paste ID
-			let pasteId: string;
-			let attempts = 0;
-			const maxAttempts = 10;
-
-			do {
-				pasteId = generatePasteId();
-				attempts++;
-			} while (!(await isSlugAvailable(pasteId)) && attempts < maxAttempts);
-
-			if (attempts >= maxAttempts) {
-				logger.error(`Failed to generate unique paste ID after ${maxAttempts} attempts`);
-				return fail(500, {
-					data: formValues,
-					message: 'Server error',
-				});
-			}
-
 			// hash password if provided
 			let passwordHash: string | undefined;
 			if (result.data.password && result.data.password.trim()) {
 				passwordHash = await hashPassword(result.data.password);
 			}
 
-			await createPaste({
-				id: pasteId,
-				content: result.data.content,
-				owner_id: userId, // null for unauthenticated users
-				visibility: result.data.visibility,
-				customSlug: result.data.customSlug,
-				language: result.data.language,
-				title: result.data.title,
-				passwordHash,
-				expiresAt: result.data.expiresAt ?? undefined,
-				burnAfterReading: result.data.burnAfterReading,
-				invitedUserIds: result.data.invitedUsers,
-				versioningEnabled: result.data.versioningEnabled,
-				versionHistoryVisible: result.data.versionHistoryVisible,
-			});
+			// attempt to create paste with retry logic for ID collisions
+			// can skip on customSlug, because its already validated
+			let pasteId: string;
+			let attempts = 0;
+			const maxAttempts = 10;
+			let lastError: unknown;
+			const hasCustomSlug = !!result.data.customSlug;
 
-			// redirect to new paste
-			throw redirect(303, `/${result.data.customSlug || pasteId}`);
+			while (attempts < maxAttempts) {
+				pasteId = generatePasteId();
+				attempts++;
+
+				try {
+					await createPaste({
+						id: pasteId,
+						content: result.data.content,
+						owner_id: userId,
+						visibility: result.data.visibility,
+						customSlug: result.data.customSlug,
+						language: result.data.language,
+						title: result.data.title,
+						passwordHash,
+						expiresAt: result.data.expiresAt ?? undefined,
+						burnAfterReading: result.data.burnAfterReading,
+						invitedUserIds: result.data.invitedUsers,
+						versioningEnabled: result.data.versioningEnabled,
+						versionHistoryVisible: result.data.versionHistoryVisible,
+					});
+
+					// success - redirect to new paste
+					throw redirect(303, `/${result.data.customSlug || pasteId}`);
+				} catch (error) {
+					// re-throw redirects immediately
+					if (isRedirect(error)) {
+						throw error;
+					}
+
+					lastError = error;
+
+					// check if this is a unique constraint violation (duplicate ID or slug)
+					const errorMessage = String(error);
+					const isUniqueViolation =
+						errorMessage.includes('unique constraint') ||
+						errorMessage.includes('duplicate key') ||
+						errorMessage.includes('23505');
+
+					if (isUniqueViolation) {
+						// if custom slug was provided, don't retry - the slug is taken
+						if (hasCustomSlug && attempts === 1) {
+							return fail(400, {
+								data: formValues,
+								errors: { customSlug: ['This URL is already taken'] },
+								message: 'URL not available',
+							});
+						}
+
+						// retry on ID collision (only when no custom slug)
+						if (!hasCustomSlug) {
+							logger.warn(
+								`Paste ID collision detected, retrying (attempt ${attempts}/${maxAttempts})`
+							);
+							continue;
+						}
+					}
+
+					// other error, but dont retry
+					break;
+				}
+			}
+
+			// if we get here, all attempts failed
+			logger.error(`Failed to create paste after ${attempts} attempts: ${lastError}`);
+			return fail(500, {
+				data: formValues,
+				errors: { _form: ['Failed to create paste'] },
+				message: 'Server error',
+			});
 		} catch (error) {
 			if (isRedirect(error)) {
-				throw error; // re-throw redirects
+				throw error;
 			}
 
 			logger.error(`Error creating paste: ${error}`);
