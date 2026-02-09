@@ -9,14 +9,29 @@
 		gfm: true, // github flavored markdown
 	});
 
+	// block URL schemes that could execute code
+	function sanitizeUrl(url: string): string {
+		const lowerUrl = url.toLowerCase().trim();
+		if (
+			lowerUrl.startsWith('javascript:') ||
+			lowerUrl.startsWith('data:') ||
+			lowerUrl.startsWith('vbscript:') ||
+			lowerUrl.startsWith('file:') ||
+			lowerUrl.startsWith('about:')
+		) {
+			return '#';
+		}
+		return url;
+	}
+
 	// parse and sanitize markdown
 	const renderedHtml = $derived.by(() => {
 		try {
 			// parse markdown to HTML
 			const rawHtml = marked.parse(content) as string;
 
-			// sanitize HTML to prevent XSS
-			const sanitized = DOMPurify.sanitize(rawHtml, {
+			// base sanitize config
+			const baseConfig = {
 				// allow common safe tags
 				ALLOWED_TAGS: [
 					'h1',
@@ -51,12 +66,38 @@
 					'del',
 					'sup',
 					'sub',
-				],
+				] as string[],
 				// allow safe attributes
 				ALLOWED_ATTR: ['href', 'title', 'alt', 'src', 'class', 'id', 'rel', 'target'],
 				// enforce safe protocols for links and images
 				ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|ftp):|[^a-z]|[a-z+.-]+(?:[^a-z+.\-:]|$))/i,
-			});
+			};
+
+			let sanitized: string;
+
+			if (typeof window !== 'undefined') {
+				const config: Record<string, unknown> = {
+					...baseConfig,
+					hooks: {
+						uponSanitizeAttribute: (
+							_node: Element,
+							data: { attrName: string; attrValue: string }
+						) => {
+							if (data.attrName === 'href' || data.attrName === 'src') {
+								data.attrValue = sanitizeUrl(data.attrValue);
+							}
+						},
+					},
+				};
+				sanitized = DOMPurify.sanitize(rawHtml, config) as unknown as string;
+			} else {
+				// DOMPurify first, then manual URL sanitization
+				sanitized = DOMPurify.sanitize(rawHtml, baseConfig);
+				// regex-based sanitization
+				sanitized = sanitized
+					.replace(/href="([^"]*)"/g, (match, url) => `href="${sanitizeUrl(url)}"`)
+					.replace(/src="([^"]*)"/g, (match, url) => `src="${sanitizeUrl(url)}"`);
+			}
 
 			return sanitized;
 		} catch (error) {
