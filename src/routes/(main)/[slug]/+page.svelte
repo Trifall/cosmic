@@ -528,6 +528,21 @@
 					<Button
 						onclick={() => {
 							if (isMarkdownMode) {
+								copyToClipboard(data.paste?.content, 'Copied markdown to clipboard');
+							} else {
+								copyToClipboard(data.paste?.content, 'Copied paste content to clipboard');
+							}
+						}}
+						class="h-11 w-full bg-orange-500 font-medium text-white hover:bg-orange-600 xl:text-base"
+					>
+						<Copy size={18} />
+						{isMarkdownMode ? 'Copy Markdown' : 'Copy Content'}
+					</Button>
+
+					{#if isMarkdownMode}
+						<Button
+							variant="outline"
+							onclick={() => {
 								// copy rendered HTML in markdown mode
 								import('marked').then(({ marked }) => {
 									import('isomorphic-dompurify').then((DOMPurifyModule) => {
@@ -537,15 +552,13 @@
 										copyToClipboard(sanitized, 'Copied rendered HTML to clipboard');
 									});
 								});
-							} else {
-								copyToClipboard(data.paste?.content, 'Copied paste content to clipboard');
-							}
-						}}
-						class="h-11 w-full bg-orange-500 font-medium text-white hover:bg-orange-600 xl:text-base"
-					>
-						<Copy size={18} />
-						{isMarkdownMode ? 'Copy HTML' : 'Copy Content'}
-					</Button>
+							}}
+							class="h-10 w-full font-medium xl:text-base"
+						>
+							<Copy size={16} />
+							Copy HTML
+						</Button>
+					{/if}
 
 					<div class="grid grid-cols-2 gap-2">
 						<Button variant="outline" onclick={copyPasteUrl} class="h-10 font-medium xl:text-base">
